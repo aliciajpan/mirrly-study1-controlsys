@@ -93,4 +93,4 @@ def ws_beacon(data):
 if __name__ == "__main__":
     # Run: USE_VLC=1 python app.py   # to enable system VLC mirroring
     # Then open http://localhost:5000/
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
