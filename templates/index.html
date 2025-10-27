@@ -1,0 +1,51 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>HRI Media Console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+      .row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px;}
+      button { padding: 8px 14px; border-radius: 10px; border: 1px solid #ccc; cursor: pointer; }
+      input[type="text"] { width: 480px; padding: 8px; }
+      .status { font-size: 14px; color: #555; margin-top: 8px; }
+      video, audio { width: 100%; max-width: 900px; background: #000; border-radius: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>HRI Media Console</h1>
+
+    <div class="row">
+      <input id="media-url" type="text" placeholder="Media URL or path"
+             value="{{ media_url|safe }}" />
+      <select id="media-type">
+        <option value="video" {{ 'selected' if media_type == 'video' else '' }}>Video</option>
+        <option value="audio" {{ 'selected' if media_type == 'audio' else '' }}>Audio</option>
+      </select>
+      <button id="btn-load">Load</button>
+    </div>
+
+    <div class="row">
+      <button id="btn-play">Play</button>
+      <button id="btn-pause">Pause</button>
+      <label>Seek (s): <input id="seek-seconds" type="number" value="0" style="width:100px;"></label>
+      <button id="btn-seek">Go</button>
+    </div>
+
+    <div id="player-wrap">
+      <!-- One of these will be shown based on media type -->
+      <video id="video" controls playsinline style="display:none"></video>
+      <audio id="audio" controls style="display:none"></audio>
+    </div>
+
+    <div class="status">
+      <span id="conn">Connecting…</span> ·
+      <span id="now"></span>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/static/client.js"></script>
+  </body>
+</html>
