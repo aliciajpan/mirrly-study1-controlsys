@@ -5,3 +5,4 @@ venv-study1
 __pycache__
 __pycache__/
 __pycache__/*
+static/examples/*
