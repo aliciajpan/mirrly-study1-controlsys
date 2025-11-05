@@ -1,96 +1,137 @@
-import os
-import time
+# app.py
 from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit
-from media_controller import SystemVLCController, BrowserBroadcaster, DualController
+from pathlib import Path
+from datetime import datetime
 
-USE_VLC = os.environ.get("USE_VLC", "0") == "1"
+app = Flask(__name__, static_url_path="/static", static_folder="static", template_folder="templates")
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
 
-# Socket.IO with eventlet
-socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
+# --- Simple in-memory media state ---
+MEDIA_STATE = {
+    "url": "",          # e.g., /static/media/demo.mp4 or http(s) URL
+    "type": "",         # "video" | "audio" | "image"
+    "isPlaying": False,
+    "position": 0.0,    # seconds (screen will seek to this)
+    "position_nonce": 0,   # <— NEW: increments when server wants screen to seek
+    "lastChange": None, # iso timestamp for debugging
+    "duration": 0.0,      # <— NEW: reported by /screen
+    "currentTime": 0.0,   # <— NEW: reported by /screen
+    "volume": 1.0
+}
 
-# Controllers
-browser = BrowserBroadcaster(socketio)
-vlc_controller = SystemVLCController() if USE_VLC else None
-ctrl = DualController(browser, vlc_controller)
+def _touch():
+    MEDIA_STATE["lastChange"] = datetime.utcnow().isoformat()
 
-# --------- Web UI ----------
+# ---- OPTIONAL: robot hooks (stub) ----
+def robot_pause():
+    # TODO: call your robot endpoint or queue a pause command, e.g.:
+    # requests.post("http://<robot host>:<port>/api/pause")
+    pass
+
+def robot_play():
+    # TODO: call your robot endpoint or queue a resume command
+    pass
+
+def robot_seek(position_s: float):
+    # TODO: if you synchronize robot timeline to media, handle here
+    pass
+
+# ----------------- Pages -----------------
 @app.route("/")
 def index():
-    # /?media=<url>&type=video|audio to pre-load
-    media_url = request.args.get("media", "")
-    media_type = request.args.get("type", "video")
-    return render_template("index.html", media_url=media_url, media_type=media_type)
+    return render_template("index.html")  # optional landing page if you want
 
-# --------- Simple REST endpoints (optional) ----------
-@app.post("/api/load")
-def api_load():
-    data = request.get_json(force=True)
-    url = data["url"]
-    media_type = data.get("type", "video")
-    autoplay = bool(data.get("autoplay", True))
-    ctrl.load(url, media_type, autoplay)
-    return jsonify({"ok": True})
+@app.route("/screen")
+def screen():
+    return render_template("screen.html")
 
-@app.post("/api/play")
-def api_play():
-    ctrl.play()
-    return jsonify({"ok": True})
+@app.route("/control")
+def control():
+    return render_template("control.html")
 
-@app.post("/api/pause")
-def api_pause():
-    ctrl.pause()
-    return jsonify({"ok": True})
+# --------------- API (HTTP) ---------------
+@app.route("/api/state", methods=["GET"])
+def get_state():
+    return jsonify(MEDIA_STATE)
 
-@app.post("/api/seek")
-def api_seek():
-    data = request.get_json(force=True)
-    t = float(data["time"])
-    ctrl.seek(t)
-    return jsonify({"ok": True})
+@app.route("/api/progress", methods=["POST"])
+def progress_api():
+    """
+    Body: { "currentTime": <float>, "duration": <float> }
+    Screen calls this periodically so control UI can show live seek.
+    """
+    data = request.get_json(force=True) or {}
+    try:
+        MEDIA_STATE["currentTime"] = max(0.0, float(data.get("currentTime", 0.0)))
+    except Exception:
+        MEDIA_STATE["currentTime"] = 0.0
+    try:
+        d = float(data.get("duration", 0.0))
+        MEDIA_STATE["duration"] = d if d == d and d != float("inf") else 0.0  # sanity
+    except Exception:
+        MEDIA_STATE["duration"] = 0.0
+    return jsonify(ok=True)
 
-@app.get("/api/status")
-def api_status():
-    return jsonify(ctrl.status())
+@app.route("/api/control", methods=["POST"])
+def control_api():
+    """
+    Accepts JSON like:
+    {
+      "action": "load" | "play" | "pause" | "seek" | "volume",
+      "url": "/static/media/foo.mp4",   # for load
+      "type": "video",                  # for load
+      "position": 12.34,                # for seek (sec)
+      "volume": 0.0..1.0                # for volume
+    }
+    """
+    data = request.get_json(force=True) or {}
+    action = data.get("action")
 
-# --------- WebSocket namespace for real-time control ----------
-@socketio.on("connect", namespace="/ws")
-def on_connect():
-    emit("server:hello", {"msg": "connected", "ts": time.time()})
+    if action == "load":
+        MEDIA_STATE["url"] = data.get("url", "")
+        MEDIA_STATE["type"] = data.get("type", "")
+        MEDIA_STATE["position"] = 0.0
+        MEDIA_STATE["isPlaying"] = False
+        MEDIA_STATE["position_nonce"] += 1     # <— ask screen to seek to 0 once
+        _touch()
+        return jsonify(ok=True, state=MEDIA_STATE)
 
-@socketio.on("media:load", namespace="/ws")
-def ws_load(data):
-    # Any client (robot controller or browser) can ask to load media
-    url = data["url"]
-    media_type = data.get("mediaType", "video")
-    autoplay = bool(data.get("autoplay", True))
-    print(url)
-    ctrl.load(url, media_type, autoplay)
+    if action == "play":
+        MEDIA_STATE["isPlaying"] = True
+        _touch()
+        robot_play()
+        return jsonify(ok=True, state=MEDIA_STATE)
 
-@socketio.on("media:play", namespace="/ws")
-def ws_play(_):
-    ctrl.play()
+    if action == "pause":
+        MEDIA_STATE["isPlaying"] = False
+        _touch()
+        robot_pause()
+        return jsonify(ok=True, state=MEDIA_STATE)
 
-@socketio.on("media:pause", namespace="/ws")
-def ws_pause(_):
-    ctrl.pause()
+    if action == "seek":
+        try:
+            pos = float(data.get("position", 0.0))
+        except Exception:
+            pos = 0.0
+        MEDIA_STATE["position"] = max(0.0, pos)
+        MEDIA_STATE["position_nonce"] += 1     # <— NEW
+        _touch()
+        robot_seek(MEDIA_STATE["position"])
+        return jsonify(ok=True, state=MEDIA_STATE)
 
-@socketio.on("media:seek", namespace="/ws")
-def ws_seek(data):
-    t = float(data["time"])
-    ctrl.seek(t)
+    if action == "volume":
+        try:
+            vol = float(data.get("volume", 1.0))
+        except Exception:
+            vol = 1.0
+        MEDIA_STATE["volume"] = max(0.0, min(1.0, vol))
+        _touch()
+        return jsonify(ok=True, state=MEDIA_STATE)
 
-@socketio.on("sync:beacon", namespace="/ws")
-def ws_beacon(data):
-    # A controller can push a sync tick; server rebroadcasts (and could timestamp)
-    data = dict(data or {})
-    data["server_ts"] = time.time()
-    socketio.emit("sync:beacon", data, namespace="/ws", broadcast=True)
+    return jsonify(ok=False, error="unknown action"), 400
+
+
 
 if __name__ == "__main__":
-    # Run: USE_VLC=1 python app.py   # to enable system VLC mirroring
-    # Then open http://localhost:5000/
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    # For local testing
+    app.run(host="0.0.0.0", port=5000, debug=True)

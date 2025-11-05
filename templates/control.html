@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mirrly — Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; }
+      fieldset { border:1px solid #ddd; border-radius:10px; padding:16px; margin-bottom:16px; }
+      label { display:block; margin:8px 0 4px; }
+      input[type=text], select { width:100%; padding:8px; }
+      button { padding:8px 12px; margin-right:8px; }
+      .row { display:flex; gap:10px; align-items:center; }
+      .row > * { flex:1; }
+      #status { font:12px monospace; color:#555; }
+    </style>
+  </head>
+  <body>
+    <h1>Mirrly – Media Controller</h1>
+
+    <fieldset>
+      <legend>Load media</legend>
+      <div class="row">
+        <label>Type</label>
+        <select id="mediaType">
+          <option value="video">video</option>
+          <option value="audio">audio</option>
+          <option value="image">image</option>
+        </select>
+      </div>
+      <label>URL (can be /static/... or https://...)</label>
+      <input id="mediaUrl" type="text" placeholder="/static/examples/test.mp4" />
+      <div style="margin-top:8px;">
+        <button id="loadBtn">Load</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+    <legend>Playback</legend>
+    <button id="toggleBtn">Play</button>
+    <button id="resetBtn" title="Seek to 0s">Reset</button>
+
+    <div style="margin-top:14px;">
+        <label for="seekSlider">Seek</label>
+        <input id="seekSlider" type="range" min="0" max="0" step="0.1" value="0" style="width:100%;">
+        <div style="display:flex; justify-content:space-between; font:12px/1.6 monospace; color:#555;">
+        <span id="seekNow">0.0s</span>
+        <span id="seekDur">0.0s</span>
+        </div>
+    </div>
+
+    <div style="margin-top:14px;">
+        <label for="volSlider">Volume: <span id="volPct">100%</span></label>
+        <input id="volSlider" type="range" min="0" max="100" step="1" value="100" style="width:100%;">
+    </div>
+    </fieldset>
+
+
+
+    <div id="status">state: (loading…)</div>
+
+    <script src="/static/control.js?v=toggle1"></script>
+  </body>
+</html>
