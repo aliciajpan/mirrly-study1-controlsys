@@ -37,6 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const nowElapsed     = document.querySelector("#nowElapsed");
   const nowExtra       = document.querySelector("#nowExtra");
 
+  const scenResetBtn = document.querySelector("#scenResetBtn");
+
+  scenPauseBtn.onclick  = async () => { await postJSON("/api/scenario/pause", {});  await pollScenarioOnce(); };
+  scenResumeBtn.onclick = async () => { await postJSON("/api/scenario/resume", {}); await pollScenarioOnce(); };
+  scenStopBtn.onclick   = async () => { await postJSON("/api/scenario/stop", {});   await pollScenarioOnce(); };
+  scenResetBtn.onclick  = async () => { await postJSON("/api/scenario/reset", {});  await pollScenarioOnce(); };
 
   let isScrubbing = false;
   let lastIsPlaying = false;

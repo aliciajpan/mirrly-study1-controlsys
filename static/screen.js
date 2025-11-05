@@ -58,9 +58,15 @@ async function applyState(s) {
 
     if (s.type === "video") {
       showVisualOnly(v);
+      // 🔧 autoplay helpers
+      v.setAttribute("playsinline", "");   // iOS/Safari inline playback
+      v.playsInline = true;
+      v.muted = true;                      // allow autoplay on first attach
+
       v.src = s.url;
-      try { await v.play().catch(()=>{}); } catch(_) {}
-      v.pause();
+      try { await v.play(); } catch(_) {}
+      v.pause();                           // prewarm the pipeline
+
       attachEnded(v, "primary");
     } else if (s.type === "image") {
       showVisualOnly(i);
@@ -89,13 +95,18 @@ async function applyState(s) {
   }
 
   // Primary play/pause
-  if (s.type === "video") {
-    if (s.isPlaying) { if (v.paused) { try { await v.play(); } catch(_) {} } }
-    else { if (!v.paused) v.pause(); }
-    postProgress(v.currentTime || 0, Number.isFinite(v.duration) ? v.duration : 0);
+if (s.type === "video") {
+  if (s.isPlaying) {
+    if (v.muted && (s.volume ?? 1) > 0) v.muted = false;  // 🔊 unmute when actually playing
+    if (v.paused) { try { await v.play(); } catch(_) {} }
   } else {
-    postProgress(0, 0);
+    if (!v.paused) v.pause();
   }
+  postProgress(v.currentTime || 0, Number.isFinite(v.duration) ? v.duration : 0);
+} else {
+  postProgress(0, 0);
+}
+
 
   // ----- OVERLAY AUDIO while image is visible -----
   if (s.type === "image" && s.overlayAudioUrl) {

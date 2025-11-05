@@ -14,14 +14,15 @@ _SCEN_THREAD = None
 _SCEN_STOP = threading.Event()
 _SCEN_PAUSE = threading.Event()
 
-def _post_control(d):
-    # Call the same code path as your /api/control, but in-process
-    with app.test_request_context(json=d):
-        resp = control_api()           # <- Flask Response
+def _post_control(payload: dict):
+    # Reuse the same handler as /api/control without a client round-trip
+    with app.test_request_context(json=payload):
+        resp = control_api()                  # Flask Response
+    # we don't need the body; swallow errors quietly
     try:
-        return resp.get_json()         # optional: read JSON if you want
+        return resp.get_json()
     except Exception:
-        return None                    # we don't actually need the payload
+        return None
 
 
 def _wait_seconds(sec: float):
@@ -55,10 +56,16 @@ def _run_scenario(steps: List[Dict[str, Any]]):
     _SCEN_STOP.clear(); _SCEN_PAUSE.clear()
     try:
         for idx, st in enumerate(steps):
-            SCENARIO["step_index"] = idx
+            # handle stop early
+            if _SCEN_STOP.is_set():
+                SCENARIO["status"] = "stopped"
+                SCENARIO["current"] = None
+                return
 
+            SCENARIO["step_index"] = idx
             act = st.get("action")
             args = {k: v for k, v in st.items() if k != "action"}
+
             SCENARIO["current"] = {"index": idx, "action": act, "args": args}
             SCENARIO["step_started_at"] = time.time()
             
@@ -96,42 +103,26 @@ def _run_scenario(steps: List[Dict[str, Any]]):
                 if _SCEN_STOP.is_set(): break
                 time.sleep(0.05)
 
-        SCENARIO["status"] = "stopped" if _SCEN_STOP.is_set() else "completed"
+        SCENARIO["status"] = "completed"
+        SCENARIO["current"] = None
+        SCENARIO["step_started_at"] = None
     except Exception as e:
         SCENARIO.update({"status":"error","error":str(e)})
     finally:
         pass
     
 def _pause_all_tracks_and_mark():
-    """Pause primary media and overlay if currently playing; record what to resume."""
-    # Primary (video/audio)
-    if MEDIA_STATE.get("isPlaying", False):
-        SCENARIO["media_autoresume"] = True
-        with app.test_request_context(json={"action":"pause"}):
-            control_api()
-    else:
-        SCENARIO["media_autoresume"] = False
+    if MEDIA_STATE.get("isPlaying"):          _post_control({"action":"pause"}); SCENARIO["media_autoresume"]=True
+    else:                                     SCENARIO["media_autoresume"]=False
+    if MEDIA_STATE.get("overlayAudioPlaying"): _post_control({"action":"overlay_audio_pause"}); SCENARIO["overlay_autoresume"]=True
+    else:                                     SCENARIO["overlay_autoresume"]=False
 
-    # Overlay audio
-    if MEDIA_STATE.get("overlayAudioPlaying", False):
-        SCENARIO["overlay_autoresume"] = True
-        with app.test_request_context(json={"action":"overlay_audio_pause"}):
-            control_api()
-    else:
-        SCENARIO["overlay_autoresume"] = False
 
 
 def _resume_marked_tracks():
-    """Resume only what we paused earlier."""
-    if SCENARIO.get("media_autoresume"):
-        with app.test_request_context(json={"action":"play"}):
-            control_api()
-        SCENARIO["media_autoresume"] = False
+    if SCENARIO.get("media_autoresume"):       _post_control({"action":"play"}); SCENARIO["media_autoresume"]=False
+    if SCENARIO.get("overlay_autoresume"):     _post_control({"action":"overlay_audio_play"}); SCENARIO["overlay_autoresume"]=False
 
-    if SCENARIO.get("overlay_autoresume"):
-        with app.test_request_context(json={"action":"overlay_audio_play"}):
-            control_api()
-        SCENARIO["overlay_autoresume"] = False
 
 
 app = Flask(__name__, static_url_path="/static", static_folder="static", template_folder="templates")
@@ -166,6 +157,9 @@ MEDIA_STATE = {
     "overlay_autoresume": False,
     
     "lastChange": None,
+    
+    # NEW: remember last steps so reset can restart the same scenario
+    "last_steps": None,
 }
 
 def _touch():
@@ -329,7 +323,6 @@ def control_api():
 
 @app.route("/api/scenario/run", methods=["POST"])
 def scenario_run():
-    """Body: {"steps":[ ... ]}"""
     global _SCEN_THREAD
     data = request.get_json(force=True) or {}
     steps = data.get("steps") or []
@@ -338,14 +331,24 @@ def scenario_run():
     if _SCEN_THREAD and _SCEN_THREAD.is_alive():
         return jsonify(ok=False, error="Scenario already running"), 409
 
-    # clear flags at (re)start
+    # save for reset
+    SCENARIO["last_steps"] = steps
+
+    # clean state
+    SCENARIO["status"] = "running"
+    SCENARIO["error"] = None
+    SCENARIO["step_index"] = -1
+    SCENARIO["current"] = None
+    SCENARIO["step_started_at"] = None
     SCENARIO["media_autoresume"] = False
     SCENARIO["overlay_autoresume"] = False
 
-    _SCEN_STOP.clear(); _SCEN_PAUSE.clear()
+    _SCEN_STOP.clear()
+    _SCEN_PAUSE.clear()
     _SCEN_THREAD = threading.Thread(target=_run_scenario, args=(steps,), daemon=True)
     _SCEN_THREAD.start()
     return jsonify(ok=True, status="started")
+
 
 @app.route("/api/scenario/runfile", methods=["POST"])
 def scenario_runfile():
@@ -394,23 +397,48 @@ def scenario_status():
 @app.route("/api/scenario/pause", methods=["POST"])
 def scenario_pause():
     _SCEN_PAUSE.set()
+    SCENARIO["status"] = "paused"
     _pause_all_tracks_and_mark()
     return jsonify(ok=True, status="paused")
 
 @app.route("/api/scenario/resume", methods=["POST"])
 def scenario_resume():
     _SCEN_PAUSE.clear()
+    SCENARIO["status"] = "running"
     _resume_marked_tracks()
     return jsonify(ok=True, status="running")
+
 
 @app.route("/api/scenario/stop", methods=["POST"])
 def scenario_stop():
     _SCEN_STOP.set()
-    # Stop should also pause everything and clear autoresume flags
+    _pause_all_tracks_and_mark()
+    # no autoresume after a stop
+    SCENARIO["media_autoresume"] = False
+    SCENARIO["overlay_autoresume"] = False
+    SCENARIO["status"] = "stopped"
+    return jsonify(ok=True, status="stopped")
+
+@app.route("/api/scenario/reset", methods=["POST"])
+def scenario_reset():
+    steps = SCENARIO.get("last_steps")
+    if not steps:
+        return jsonify(ok=False, error="No previous scenario to reset"), 400
+    # hard stop current
+    _SCEN_STOP.set()
     _pause_all_tracks_and_mark()
     SCENARIO["media_autoresume"] = False
     SCENARIO["overlay_autoresume"] = False
-    return jsonify(ok=True, status="stopping")
+    # immediately restart
+    _SCEN_STOP.clear()
+    _SCEN_PAUSE.clear()
+    SCENARIO["status"] = "running"
+    SCENARIO["error"] = None
+    SCENARIO["step_index"] = -1
+    SCENARIO["current"] = None
+    SCENARIO["step_started_at"] = None
+    threading.Thread(target=_run_scenario, args=(steps,), daemon=True).start()
+    return jsonify(ok=True, status="restarted")
 
 
 if __name__ == "__main__":
