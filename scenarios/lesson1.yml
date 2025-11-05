@@ -1,0 +1,9 @@
+steps:
+  - { action: play_video, url: /static/examples/test.mp4 }
+  - { action: wait, until: media_end }
+  - { action: wait, seconds: 1.0 }
+  - { action: show_image, url: /static/examples/test.jpg }
+  # - { action: play_audio_over_image, url: /static/examples/voiceover.mp3 }
+  - { action: wait, until: overlay_end }
+  - { action: play_video, url: /static/examples/test.mp4 }
+  - { action: wait, until: media_end }
