@@ -1,8 +1,10 @@
+venv/
 venv
-.venv/*
-venv-study1
-.venv-study1/*
-__pycache__
+venv/*
 __pycache__/
-__pycache__/*
-static/examples/*
+*.pyc
+.DS_Store
+.idea/
+*.log
+.env
+*.sqlite3

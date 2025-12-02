@@ -1,96 +1,142 @@
 import os
-import time
-from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit
-from media_controller import SystemVLCController, BrowserBroadcaster, DualController
+import json
+from typing import List, Dict, Any, Optional
+from flask import Flask, render_template, send_from_directory, jsonify, request
+import requests
 
-USE_VLC = os.environ.get("USE_VLC", "0") == "1"
+APP_TITLE = "Mirrly HRI Study"
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "static", "media")
+PLAYLIST_PATH = os.path.join(os.path.dirname(__file__), "playlist.json")
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Socket.IO with eventlet
-socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
+# Shared runtime state for display page
+STATE: Dict[str, Any] = {
+    "index": 0,
+    "paused": False,
+    "selection": None  # for audio-select chosen option {src,label}
+}
 
-# Controllers
-browser = BrowserBroadcaster(socketio)
-vlc_controller = SystemVLCController() if USE_VLC else None
-ctrl = DualController(browser, vlc_controller)
 
-# --------- Web UI ----------
+def load_playlist() -> Dict[str, Any]:
+    if not os.path.exists(PLAYLIST_PATH):
+        # Default minimal playlist if none exists
+        return {
+            "title": APP_TITLE,
+            "sections": [
+                {
+                    "id": "intro_video",
+                    "type": "video",
+                    "title": "Presentation: Amblyopia",
+                    "src": "media/video/intro.mp4",
+                    "robot": {"onStart": "present_start", "onEnd": "present_end"}
+                }
+            ]
+        }
+    with open(PLAYLIST_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def robot_request(action: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Placeholder for robot webserver request.
+    Configure host/port via env: ROBOT_HOST, ROBOT_PORT.
+    """
+    host = os.environ.get("ROBOT_HOST", "127.0.0.1")
+    port = int(os.environ.get("ROBOT_PORT", "8080"))
+    url = f"http://{host}:{port}/action/{action}"
+    try:
+        resp = requests.post(url, json=payload or {}, timeout=2.0)
+        return {"ok": resp.ok, "status": resp.status_code}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
 @app.route("/")
-def index():
-    # /?media=<url>&type=video|audio to pre-load
-    media_url = request.args.get("media", "")
-    media_type = request.args.get("type", "video")
-    return render_template("index.html", media_url=media_url, media_type=media_type)
+def controller():
+    # Control interface
+    return render_template("index.html", app_title=APP_TITLE)
 
-# --------- Simple REST endpoints (optional) ----------
-@app.post("/api/load")
-def api_load():
-    data = request.get_json(force=True)
-    url = data["url"]
-    media_type = data.get("type", "video")
-    autoplay = bool(data.get("autoplay", True))
-    ctrl.load(url, media_type, autoplay)
-    return jsonify({"ok": True})
+@app.route("/display")
+def display():
+    # Fullscreen participant display
+    return render_template("display.html")
 
-@app.post("/api/play")
-def api_play():
-    ctrl.play()
-    return jsonify({"ok": True})
 
-@app.post("/api/pause")
-def api_pause():
-    ctrl.pause()
-    return jsonify({"ok": True})
+@app.route("/api/playlist")
+def api_playlist():
+    return jsonify(load_playlist())
 
-@app.post("/api/seek")
-def api_seek():
-    data = request.get_json(force=True)
-    t = float(data["time"])
-    ctrl.seek(t)
-    return jsonify({"ok": True})
 
-@app.get("/api/status")
-def api_status():
-    return jsonify(ctrl.status())
+@app.route("/api/robot", methods=["POST"]) 
+def api_robot():
+    data = request.get_json(force=True) if request.data else {}
+    action = data.get("action", "noop")
+    payload = data.get("payload")
+    result = robot_request(action, payload)
+    return jsonify(result)
 
-# --------- WebSocket namespace for real-time control ----------
-@socketio.on("connect", namespace="/ws")
-def on_connect():
-    emit("server:hello", {"msg": "connected", "ts": time.time()})
 
-@socketio.on("media:load", namespace="/ws")
-def ws_load(data):
-    # Any client (robot controller or browser) can ask to load media
-    url = data["url"]
-    media_type = data.get("mediaType", "video")
-    autoplay = bool(data.get("autoplay", True))
-    print(url)
-    ctrl.load(url, media_type, autoplay)
+# Static media passthrough (optional, Flask can serve static automatically)
+@app.route('/media/<path:filename>')
+def media(filename):
+    return send_from_directory(MEDIA_ROOT, filename)
 
-@socketio.on("media:play", namespace="/ws")
-def ws_play(_):
-    ctrl.play()
 
-@socketio.on("media:pause", namespace="/ws")
-def ws_pause(_):
-    ctrl.pause()
+def _apply_robot_start(new_index: int, playlist: Dict[str, Any]):
+    try:
+        section = playlist["sections"][new_index]
+        if section.get("robot", {}).get("onStart"):
+            robot_request(section["robot"]["onStart"], {"id": section.get("id"), "type": section.get("type")})
+    except Exception:
+        pass
 
-@socketio.on("media:seek", namespace="/ws")
-def ws_seek(data):
-    t = float(data["time"])
-    ctrl.seek(t)
 
-@socketio.on("sync:beacon", namespace="/ws")
-def ws_beacon(data):
-    # A controller can push a sync tick; server rebroadcasts (and could timestamp)
-    data = dict(data or {})
-    data["server_ts"] = time.time()
-    socketio.emit("sync:beacon", data, namespace="/ws", broadcast=True)
+@app.route('/api/state', methods=['GET', 'POST'])
+def api_state():
+    playlist = load_playlist()
+    if request.method == 'POST':
+        data = request.get_json(force=True) if request.data else {}
+        # Update index
+        if 'index' in data:
+            idx = int(data['index'])
+            idx = max(0, min(idx, len(playlist['sections']) - 1))
+            if idx != STATE['index']:
+                STATE['index'] = idx
+                STATE['selection'] = None  # reset selection when changing section
+                _apply_robot_start(idx, playlist)
+        # Commands
+        cmd = data.get('command')
+        if cmd == 'pause':
+            STATE['paused'] = True
+        elif cmd == 'play':
+            STATE['paused'] = False
+        elif cmd == 'next':
+            new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
+            if new_i != STATE['index']:
+                STATE['index'] = new_i
+                STATE['selection'] = None
+                _apply_robot_start(new_i, playlist)
+        elif cmd == 'prev':
+            new_i = max(0, STATE['index'] - 1)
+            if new_i != STATE['index']:
+                STATE['index'] = new_i
+                STATE['selection'] = None
+                _apply_robot_start(new_i, playlist)
+
+        # Selection for audio-select
+        if 'selection' in data:
+            sel = data['selection']
+            if isinstance(sel, dict) and 'src' in sel:
+                STATE['selection'] = {'src': sel['src'], 'label': sel.get('label')}
+    return jsonify({
+        'index': STATE['index'],
+        'paused': STATE['paused'],
+        'selection': STATE['selection'],
+        'total': len(playlist['sections'])
+    })
+
 
 if __name__ == "__main__":
-    # Run: USE_VLC=1 python app.py   # to enable system VLC mirroring
-    # Then open http://localhost:5000/
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=True)

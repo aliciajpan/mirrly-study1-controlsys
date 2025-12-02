@@ -1,0 +1,61 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: system-ui, Arial, sans-serif; }
+.player { background: #0b0b12; display: flex; align-items: center; justify-content: center; }
+.media {
+	display: block;
+	margin: 0 auto;
+	max-width: 100vw;
+	max-height: 100vh;
+	object-fit: contain;
+}
+.sidebar { background: #1b1630; color: #e9ddff; padding: 8px 12px; overflow-y: auto; scroll-behavior: smooth; }
+
+/* Custom scrollbar for sidebar */
+.sidebar::-webkit-scrollbar {
+	width: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+	background: #3b295f;
+	border-radius: 8px;
+	border: 2px solid #1b1630;
+}
+.sidebar::-webkit-scrollbar-track {
+	background: #1b1630;
+}
+/* Firefox */
+.sidebar {
+	scrollbar-width: thin;
+	scrollbar-color: #3b295f #1b1630;
+}
+.audio-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+/* Controller layout */
+.controller-grid { height: 100vh; display: grid; grid-template-columns: 280px 1fr; grid-template-rows: auto 1fr auto; background: #0f0a1f; color: #e9ddff; }
+.controller-header { grid-column: 1 / span 2; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #2a174e; color: #e9ddff; box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+.sidebar.slim { width: 100%; }
+.section-list { list-style: none; padding: 0; margin: 0; }
+.section-list li { cursor: pointer; padding: 8px 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px; color: #e9ddff; }
+.section-list li:hover { background: #241b43; }
+.section-list li.active { background: #3b295f; font-weight: 600; }
+.controller-main { padding: 12px; background: #140e2a; overflow-y: auto; }
+.status-card { background: #1c1437; border: 1px solid #3b295f; border-radius: 10px; padding: 12px; margin-bottom: 12px; color: #e9ddff; }
+.selection-panel { position: sticky; top: 12px; background: #1c1437; border: 1px solid #3b295f; border-radius: 10px; padding: 12px; color: #e9ddff; }
+.btn { border: 1px solid #6c4bb3; background: #3b295f; color: #e9ddff; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+.btn:hover { background: #5a4295; }
+.btn.primary { background: #7c52cc; border-color: #7c52cc; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.controls-bar { grid-column: 1 / span 2; position: sticky; bottom: 0; display: flex; justify-content: center; gap: 10px; padding: 12px 16px; background: rgba(42,23,78,0.95); color: #e9ddff; box-shadow: 0 -2px 0 rgba(0,0,0,0.3); }
+
+.controller-logo {
+	height: 48px;
+	margin-right: 12px;
+	display: block;
+}
+
+.controller-header #btnOpenDisplay {
+	margin-left: auto;
+	margin-right: 0;
+	font-size: 1rem;
+	padding: 10px 18px;
+}
+}
