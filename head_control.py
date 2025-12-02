@@ -73,8 +73,10 @@ class HeadMotors(object):
             print("Succeeded to open the port")
         else:
             print("Failed to open the port")
-            print("Press any key to terminate...")
-            getch()
+
+            # put back when running from app.py instead of motion_tests.py
+            # print("Press any key to terminate...")
+            # getch() # means "get character"
             quit()
 
         # Set port baudrate
@@ -82,8 +84,10 @@ class HeadMotors(object):
             print("Succeeded to change the baudrate")
         else:
             print("Failed to change the baudrate")
-            print("Press any key to terminate...")
-            getch()
+
+            # put back when running from app.py instead of motion_tests.py
+            # print("Press any key to terminate...")
+            # getch()
             quit()
 
         # Enable Dynamixel Torque
