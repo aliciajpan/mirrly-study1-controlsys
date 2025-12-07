@@ -40,6 +40,28 @@ function updateStatus(){
 	if(!ctrlState.state) return;
 	qs('#currentSection').textContent = ctrlState.playlist.sections[ctrlState.state.index].title || ctrlState.playlist.sections[ctrlState.state.index].id;
 	qs('#pausedState').textContent = ctrlState.state.paused ? 'Yes' : 'No';
+	// Update robot status display
+	const robotStatusEl = qs('#robotStatus');
+	if(robotStatusEl){
+		if(ctrlState.state.robot_status === 'connected'){
+			robotStatusEl.textContent = '🤖 Connected';
+			robotStatusEl.style.color = '#4ade80';
+		} else if(ctrlState.state.robot_status === 'connecting'){
+			robotStatusEl.textContent = '🤖 Connecting...';
+			robotStatusEl.style.color = '#fbbf24';
+		} else {
+			robotStatusEl.textContent = '🤖 Disconnected';
+			robotStatusEl.style.color = '#ef4444';
+		}
+	}
+	// Display robot message if present
+	const robotMsgEl = qs('#robotMessage');
+	if(robotMsgEl && ctrlState.state.robot_message){
+		robotMsgEl.textContent = ctrlState.state.robot_message.message || JSON.stringify(ctrlState.state.robot_message).substring(0,100);
+		robotMsgEl.style.display = 'block';
+	} else if(robotMsgEl){
+		robotMsgEl.style.display = 'none';
+	}
 	const pausePlayBtn = qs('#btnPausePlay');
 	if(pausePlayBtn){
 		if(ctrlState.state.paused){

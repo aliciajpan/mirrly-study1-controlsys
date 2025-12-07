@@ -63,6 +63,8 @@ function playSection(section){
 		st.appendChild(p);
 	}
 	attemptPlay(disp.currentMediaEl);
+	// Trigger robot gesture for this section
+	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
 
 function applyPauseState(){if(!disp.currentMediaEl)return;if(disp.state.paused){if(typeof disp.currentMediaEl.pause==='function')disp.currentMediaEl.pause();} else {attemptPlay(disp.currentMediaEl);}}

@@ -7,7 +7,7 @@
 
     { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 prompt.mov" },
     { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "backgroundSrc": "media/image/Round1GameImage.jpg", "options": [
+    { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round1GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov" },
       { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov" },
@@ -20,7 +20,7 @@
 
     { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/round 2 prompt.mov" },
     { "id": "s10_round2_countdown", "type": "image+audio", "title": "Round2 Countdown", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s11_round2_reaction", "type": "audio-select", "title": "Round2 Reaction", "backgroundSrc": "media/image/Round2GameImage.jpg", "options": [
+    { "id": "s11_round2_reaction", "type": "audio-select", "title": "Round2 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round2GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov" },
       { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov" },
@@ -33,7 +33,7 @@
 
     { "id": "s13_round3_prompt", "type": "image+audio", "title": "Round3 Prompt", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/round 3 prompt.mov" },
     { "id": "s14_round3_countdown", "type": "image+audio", "title": "Round3 Countdown", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s15_round3_reaction", "type": "audio-select", "title": "Round3 Reaction", "backgroundSrc": "media/image/Round3GameImage.jpg", "options": [
+    { "id": "s15_round3_reaction", "type": "audio-select", "title": "Round3 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round3GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov" },
       { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov" },
@@ -46,7 +46,7 @@
 
     { "id": "s17_round4_prompt", "type": "image+audio", "title": "Round4 Prompt", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/round 4 prompt.mov" },
     { "id": "s18_round4_countdown", "type": "image+audio", "title": "Round4 Countdown", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s19_round4_reaction", "type": "audio-select", "title": "Round4 Reaction", "backgroundSrc": "media/image/Round4GameImage.jpg", "options": [
+    { "id": "s19_round4_reaction", "type": "audio-select", "title": "Round4 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round4GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov" },
       { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov" },
@@ -59,7 +59,7 @@
 
     { "id": "s21_round5_prompt", "type": "image+audio", "title": "Round5 Prompt", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/round 5 prompt.mov" },
     { "id": "s22_round5_countdown", "type": "image+audio", "title": "Round5 Countdown", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s23_round5_reaction", "type": "audio-select", "title": "Round5 Reaction", "backgroundSrc": "media/image/Round5GameImage.jpg", "options": [
+    { "id": "s23_round5_reaction", "type": "audio-select", "title": "Round5 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round5GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov" },
       { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov" },

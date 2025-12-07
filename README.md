@@ -113,6 +113,77 @@ static/
       Round1GameImage.jpg
 ```
 
+## Robot Integration
+
+Configure robot gesture synchronization via WebSocket connection:
+
+### Setup
+
+1. **Copy `.env.example` to `.env`:**
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. **Edit `.env` with your robot server details:**
+   ```
+   ROBOT_WS_URL=ws://robot-machine-ip:8000
+   ROBOT_WS_ENABLED=true
+   ROBOT_WS_DEBUG=false
+   ROBOT_GRACEFUL_SKIP=true
+   ```
+
+3. **Install WebSocket client:**
+   ```powershell
+   pip install websockets
+   ```
+
+### Gesture Mapping
+
+Define gestures in `playlist.json` using the `gesture` field:
+
+```json
+{
+  "id": "s7_round1_reaction",
+  "type": "audio-select",
+  "title": "Round 1 Reaction",
+  "gesture": "celebrate_arms_up",
+  "backgroundSrc": "media/image/Round1GameImage.jpg",
+  "options": [ ... ]
+}
+```
+
+**Available gestures:** `celebrate_arms_up`, `talking_left_arm`, `talking_right_arm`, `eyes_left`, `eyes_right`, `sad_look_down`, `look_point_left`, `look_point_right`, `center_all`
+
+### Type-Based Defaults
+
+If no explicit gesture is specified, defaults apply by section type:
+- `audio`: `center_all`
+- `video`: `center_all`
+- `image`: `center_all`
+- `image+audio`: `center_all`
+- `audio-select`: `celebrate_arms_up`
+
+### Configuration Options
+
+See `.env.example` for all options:
+- `ROBOT_WS_URL` – WebSocket server address
+- `ROBOT_WS_ENABLED` – Enable/disable robot integration
+- `ROBOT_WS_DEBUG` – Enable debug logging
+- `ROBOT_GRACEFUL_SKIP` – Continue playback even if gesture fails
+- `ROBOT_MAX_RETRIES` – Reconnection attempt limit
+- `ROBOT_RECONNECT_TIMEOUT` – Timeout between retries (seconds)
+
+### Status Monitoring
+
+Robot connection status displays in the controller UI:
+- 🤖 **Connected** (green) – Ready to send gestures
+- 🤖 **Connecting...** (yellow) – Attempting connection
+- 🤖 **Disconnected** (red) – No connection available
+
+Error messages appear below the status indicator for troubleshooting.
+
+---
+
 ## Robot integration
 
 *(Optional)* Configure robot webserver:
