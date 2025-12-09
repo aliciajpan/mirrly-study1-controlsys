@@ -1,7 +1,7 @@
 async function fetchJSON(url){const r=await fetch(url);return r.json();}
 async function postJSON(url,body){await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
 
-const ctrlState={playlist:null,state:null,prevIndex:null};
+const ctrlState={playlist:null,state:null,prevIndex:null,selectedGesture:null};
 
 function qs(s){return document.querySelector(s);} 
 
@@ -100,20 +100,88 @@ function maybeAddSelectionUI(){
 	if(current.type!=='audio-select'){
 		panel.style.display='none';
 		container.innerHTML='';
+		ctrlState.selectedGesture=null;
 		return;
 	}
 	panel.style.display='block';
 	container.innerHTML='';
+	
+	// Create a wrapper for gestures and reactions
+	const wrapper=document.createElement('div');
+	wrapper.style.display='flex';
+	wrapper.style.flexDirection='column';
+	wrapper.style.gap='12px';
+	
+	// Step 1: Gesture Selection (FIRST)
+	const gestureDiv=document.createElement('div');
+	gestureDiv.style.paddingBottom='12px';
+	gestureDiv.style.borderBottom='1px solid #7c6fa6';
+	
+	const gestureTitle=document.createElement('div');
+	gestureTitle.textContent='1. Select Winner:';
+	gestureTitle.style.color='#a89ad7';
+	gestureTitle.style.marginBottom='8px';
+	gestureTitle.style.fontSize='0.9em';
+	gestureDiv.appendChild(gestureTitle);
+	
+	const gestureButtonsDiv=document.createElement('div');
+	gestureButtonsDiv.style.display='flex';
+	gestureButtonsDiv.style.gap='8px';
+	
+	['show_star','show_diamond'].forEach(g=>{
+		const btn=document.createElement('button');
+		btn.className='btn';
+		if(ctrlState.selectedGesture===g) btn.classList.add('primary');
+		btn.textContent=g.replace('show_','').charAt(0).toUpperCase()+g.replace('show_','').slice(1);
+		btn.style.flex='1';
+		btn.addEventListener('click',()=>{
+			ctrlState.selectedGesture=g;
+			maybeAddSelectionUI(); // Refresh to show selection and enable reactions
+		});
+		gestureButtonsDiv.appendChild(btn);
+	});
+	
+	gestureDiv.appendChild(gestureButtonsDiv);
+	wrapper.appendChild(gestureDiv);
+	
+	// Step 2: Reaction Selection (ONLY ENABLED after gesture selected)
+	const reactionsDiv=document.createElement('div');
+	
+	const reactionsTitle=document.createElement('div');
+	reactionsTitle.textContent='2. Select Reaction:';
+	reactionsTitle.style.color='#a89ad7';
+	reactionsTitle.style.marginBottom='8px';
+	reactionsTitle.style.fontSize='0.9em';
+	reactionsDiv.appendChild(reactionsTitle);
+	
+	const reactionButtonsDiv=document.createElement('div');
+	reactionButtonsDiv.style.display='flex';
+	reactionButtonsDiv.style.flexWrap='wrap';
+	reactionButtonsDiv.style.gap='8px';
+	
 	current.options.forEach(opt=>{
 		const btn=document.createElement('button');
 		btn.className='btn';
 		btn.textContent=opt.label||opt.src;
-		btn.addEventListener('click',async()=>{
-			await postJSON('/api/state',{selection:{src:opt.src,label:opt.label}});
-			refreshState();
-		});
-		container.appendChild(btn);
+		btn.disabled=!ctrlState.selectedGesture; // Disabled until gesture selected
+		btn.style.opacity=ctrlState.selectedGesture?'1':'0.5';
+		btn.style.cursor=ctrlState.selectedGesture?'pointer':'not-allowed';
+		
+		if(ctrlState.selectedGesture){
+			btn.addEventListener('click',async()=>{
+				// Use selected gesture, override option's default
+				await postJSON('/api/state',{selection:{src:opt.src,label:opt.label,gesture:ctrlState.selectedGesture}});
+				ctrlState.selectedGesture=null; // Reset for next reaction
+				refreshState();
+			});
+		}
+		reactionButtonsDiv.appendChild(btn);
 	});
+	
+	reactionsDiv.appendChild(reactionButtonsDiv);
+	wrapper.appendChild(reactionsDiv);
+	
+	container.appendChild(wrapper);
 }
 
 async function init(){setupControls();ctrlState.playlist=await fetchJSON('/api/playlist');await refreshState();renderSections();setInterval(async()=>{await refreshState();maybeAddSelectionUI();},1000);} 

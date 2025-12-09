@@ -177,6 +177,16 @@ def api_state():
             sel = data['selection']
             if isinstance(sel, dict) and 'src' in sel:
                 STATE['selection'] = {'src': sel['src'], 'label': sel.get('label')}
+                # Trigger gesture if specified in the selected option
+                gesture = sel.get('gesture')
+                if gesture and robot_client:
+                    metadata = {
+                        'section_id': playlist['sections'][STATE['index']].get('id'),
+                        'reaction_label': sel.get('label'),
+                        'type': 'reaction'
+                    }
+                    robot_client.send_gesture(gesture, metadata)
+                    logger.info(f"Reaction gesture triggered: {gesture} for option {sel.get('label')}")
     return jsonify({
         'index': STATE['index'],
         'paused': STATE['paused'],
