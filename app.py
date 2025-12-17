@@ -180,7 +180,7 @@ def api_state():
                         'reaction_label': sel.get('label'),
                         'type': 'reaction'
                     }
-                    robot_client.send_gesture(gesture, metadata)
+                    robot_client.send_gesture(gesture, metadata) # Uncomment to enable reaction gestures
                     logger.info(f"Reaction gesture triggered: {gesture} for option {sel.get('label')}")
     return jsonify({
         'index': STATE['index'],

@@ -14,7 +14,7 @@ class GestureMapper:
         "video": "center_all",
         "image": "center_all",
         "image+audio": "center_all",
-        "audio-select": "celebrate_arms_up",
+        "audio-select": "", # No gesture for audio-select by default, add one if you are crazy enough
     }
 
     @staticmethod
