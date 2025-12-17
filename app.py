@@ -3,7 +3,6 @@ import json
 import logging
 from typing import List, Dict, Any, Optional
 from flask import Flask, render_template, send_from_directory, jsonify, request
-import requests
 from dotenv import load_dotenv
 
 from robot_client import RobotWebSocketClient
@@ -81,21 +80,6 @@ def load_playlist() -> Dict[str, Any]:
         return json.load(f)
 
 
-def robot_request(action: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """
-    Placeholder for robot webserver request.
-    Configure host/port via env: ROBOT_HOST, ROBOT_PORT.
-    """
-    host = os.environ.get("ROBOT_HOST", "127.0.0.1")
-    port = int(os.environ.get("ROBOT_PORT", "8080"))
-    url = f"http://{host}:{port}/action/{action}"
-    try:
-        resp = requests.post(url, json=payload or {}, timeout=2.0)
-        return {"ok": resp.ok, "status": resp.status_code}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
-
-
 @app.route("/")
 def controller():
     # Control interface
@@ -112,15 +96,6 @@ def api_playlist():
     return jsonify(load_playlist())
 
 
-@app.route("/api/robot", methods=["POST"]) 
-def api_robot():
-    data = request.get_json(force=True) if request.data else {}
-    action = data.get("action", "noop")
-    payload = data.get("payload")
-    result = robot_request(action, payload)
-    return jsonify(result)
-
-
 # Static media passthrough (optional, Flask can serve static automatically)
 @app.route('/media/<path:filename>')
 def media(filename):
@@ -130,6 +105,12 @@ def media(filename):
 def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
     """Trigger robot gesture for the new section."""
     try:
+        # First stop any currently running gesture
+        if robot_client:
+            robot_client.send_command('stop')
+            logger.info("Sent stop command before starting new gesture")
+        
+        # Then start the new gesture
         section = playlist["sections"][new_index]
         gesture = GestureMapper.get_gesture(section)
         if gesture and robot_client:
@@ -157,8 +138,20 @@ def api_state():
         cmd = data.get('command')
         if cmd == 'pause':
             STATE['paused'] = True
+            # Send stop command to halt current gesture
+            if robot_client:
+                robot_client.send_command('stop')
+                logger.info("Sent stop command on pause")
         elif cmd == 'play':
             STATE['paused'] = False
+            # Restart current section's gesture from beginning
+            current_section = playlist['sections'][STATE['index']]
+            gesture = GestureMapper.get_gesture(current_section)
+            if gesture and robot_client:
+                robot_client.send_command('stop')  # Stop first
+                metadata = GestureMapper.get_metadata(current_section)
+                robot_client.send_gesture(gesture, metadata)  # Then restart
+                logger.info(f"Restarted gesture: {gesture} for section {current_section.get('id')}")
         elif cmd == 'next':
             new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
             if new_i != STATE['index']:
@@ -180,6 +173,8 @@ def api_state():
                 # Trigger gesture if specified in the selected option
                 gesture = sel.get('gesture')
                 if gesture and robot_client:
+                    # Stop current gesture before starting reaction gesture
+                    robot_client.send_command('stop')
                     metadata = {
                         'section_id': playlist['sections'][STATE['index']].get('id'),
                         'reaction_label': sel.get('label'),

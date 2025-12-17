@@ -6,7 +6,7 @@ const AUDIO_EXT=['mp3','m4a','wav','ogg'];
 const IMAGE_EXT=['png','jpg','jpeg'];
 let userInteracted=false;
 
-const disp={playlist:null,state:null,renderedIndex:null,currentMediaEl:null};
+const disp={playlist:null,state:null,renderedIndex:null,currentMediaEl:null,wasPaused:false};
 async function postState(body){try{await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}catch(e){}}
 
 function ext(src){const p=src.split('?')[0];const parts=p.split('.');return parts.length>1?parts.pop().toLowerCase():'';}
@@ -67,9 +67,22 @@ function playSection(section){
 	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
 
-function applyPauseState(){if(!disp.currentMediaEl)return;if(disp.state.paused){if(typeof disp.currentMediaEl.pause==='function')disp.currentMediaEl.pause();} else {attemptPlay(disp.currentMediaEl);}}
+function applyPauseState(){
+	if(!disp.currentMediaEl)return;
+	if(disp.state.paused){
+		if(typeof disp.currentMediaEl.pause==='function')disp.currentMediaEl.pause();
+		disp.wasPaused = true;
+	} else {
+		// Only reset to beginning if transitioning from paused to playing (restart)
+		if(disp.wasPaused && disp.currentMediaEl.currentTime !== undefined){
+			disp.currentMediaEl.currentTime = 0;
+			disp.wasPaused = false;
+		}
+		attemptPlay(disp.currentMediaEl);
+	}
+}
 
-async function poll(){disp.state=await fetchJSON('/api/state');if(!disp.playlist)disp.playlist=await fetchJSON('/api/playlist');if(disp.state.index!==disp.renderedIndex){disp.renderedIndex=disp.state.index;playSection(disp.playlist.sections[disp.state.index]);} else {const section=disp.playlist.sections[disp.state.index];if(section.type==='audio-select' && disp.state.selection){const st=qs('#stage');if(!st.querySelector('audio') && !st.querySelector('video')){playSection(section);} }} applyPauseState();}
+async function poll(){disp.state=await fetchJSON('/api/state');if(!disp.playlist)disp.playlist=await fetchJSON('/api/playlist');if(disp.state.index!==disp.renderedIndex){disp.renderedIndex=disp.state.index;disp.wasPaused=false;playSection(disp.playlist.sections[disp.state.index]);} else {const section=disp.playlist.sections[disp.state.index];if(section.type==='audio-select' && disp.state.selection){const st=qs('#stage');if(!st.querySelector('audio') && !st.querySelector('video')){playSection(section);} }} applyPauseState();}
 
 function addInteractionOverlay(){const st=qs('#stage');const ov=document.createElement('div');ov.id='interactionOverlay';ov.style.position='fixed';ov.style.inset='0';ov.style.display='flex';ov.style.alignItems='center';ov.style.justifyContent='center';ov.style.background='rgba(0,0,0,0.85)';ov.style.color='#fff';ov.style.fontSize='2.5rem';ov.style.fontFamily='system-ui';ov.style.cursor='pointer';ov.textContent='Click to Start';ov.addEventListener('click',()=>{userInteracted=true;ov.remove();if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});} attemptPlay(disp.currentMediaEl);});st.appendChild(ov);}
 

@@ -116,6 +116,39 @@ class RobotWebSocketClient:
             logger.error(f"Failed to send gesture: {e}")
             return False
 
+    def send_command(self, action: str, metadata: Optional[Dict] = None) -> bool:
+        """
+        Send a control command to the robot (pause, resume, restart, stop, status).
+        
+        Args:
+            action: Command action (pause|resume|restart|stop|status)
+            metadata: Optional metadata
+            
+        Returns:
+            True if sent successfully, False otherwise
+        """
+        if not self.connected or not self.loop:
+            logger.warning(f"Robot not connected, cannot send command: {action}")
+            return False
+
+        payload = {"action": action}
+        if metadata:
+            payload["metadata"] = metadata
+        message = json.dumps(payload)
+
+        # Schedule the send in the event loop
+        future = asyncio.run_coroutine_threadsafe(
+            self._send_message(message), self.loop
+        )
+
+        try:
+            future.result(timeout=2)
+            logger.debug(f"Command sent: {action}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send command: {e}")
+            return False
+
     async def _send_message(self, message: str):
         """Send a message via WebSocket."""
         if self.websocket and self.connected:

@@ -2,10 +2,10 @@
   "title": "Mirrly HRI Sample Study",
   "sections": [
     { "id": "s1_intro_tts", "type": "audio", "title": "Intro TTS 1", "src": "media/audio/intro.m4a" },
-    { "id": "s3_amblyopia_video", "type": "video", "title": "Amblyopia Video", "src": "media/video/amblyopia.mp4" },
+    { "id": "s3_amblyopia_video", "type": "video", "title": "Amblyopia Video", "gesture": "video_tts_all", "src": "media/video/amblyopia.mp4" },
     { "id": "s4_game_intro", "type": "audio", "title": "Game Intro IRL", "src": "media/audio/GAME INTRO IRL.mov" },
 
-    { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 prompt.mov" },
+    { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "gesture": "game_tts_1_prompt", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 prompt.mov" },
     { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "gesture": "countdown_gesture", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round1GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
@@ -16,9 +16,9 @@
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
       { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
     ] },
-    { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 answer.mov" },
+    { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "gesture": "game_tts_1_answer", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 answer.mov" },
 
-    { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/round 2 prompt.mov" },
+    { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "gesture": "game_tts_2_prompt", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/round 2 prompt.mov" },
     { "id": "s10_round2_countdown", "type": "image+audio", "title": "Round2 Countdown", "gesture": "countdown_gesture", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s11_round2_reaction", "type": "audio-select", "title": "Round2 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round2GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
@@ -29,9 +29,9 @@
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
       { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
     ] },
-    { "id": "s12_round2_answer", "type": "image+audio", "title": "Round2 Answer", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/round 2 answer.mov" },
+    { "id": "s12_round2_answer", "type": "image+audio", "title": "Round2 Answer", "gesture": "game_tts_2_answer", "src": "media/image/Round2GameImage.jpg", "audio": "media/audio/round 2 answer.mov" },
 
-    { "id": "s13_round3_prompt", "type": "image+audio", "title": "Round3 Prompt", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/round 3 prompt.mov" },
+    { "id": "s13_round3_prompt", "type": "image+audio", "title": "Round3 Prompt", "gesture": "game_tts_3_prompt", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/round 3 prompt.mov" },
     { "id": "s14_round3_countdown", "type": "image+audio", "title": "Round3 Countdown", "gesture": "countdown_gesture", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s15_round3_reaction", "type": "audio-select", "title": "Round3 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round3GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
@@ -42,9 +42,9 @@
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
       { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
     ] },
-    { "id": "s16_round3_answer", "type": "image+audio", "title": "Round3 Answer", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/round 3 answer.mov" },
+    { "id": "s16_round3_answer", "type": "image+audio", "title": "Round3 Answer", "gesture": "game_tts_3_answer", "src": "media/image/Round3GameImage.jpg", "audio": "media/audio/round 3 answer.mov" },
 
-    { "id": "s17_round4_prompt", "type": "image+audio", "title": "Round4 Prompt", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/round 4 prompt.mov" },
+    { "id": "s17_round4_prompt", "type": "image+audio", "title": "Round4 Prompt", "gesture": "game_tts_4_prompt", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/round 4 prompt.mov" },
     { "id": "s18_round4_countdown", "type": "image+audio", "title": "Round4 Countdown", "gesture": "countdown_gesture", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s19_round4_reaction", "type": "audio-select", "title": "Round4 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round4GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
@@ -55,9 +55,9 @@
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
       { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
     ] },
-    { "id": "s20_round4_answer", "type": "image+audio", "title": "Round4 Answer", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/round 4 answer.mov" },
+    { "id": "s20_round4_answer", "type": "image+audio", "title": "Round4 Answer", "gesture": "game_tts_4_answer", "src": "media/image/Round4GameImage.jpg", "audio": "media/audio/round 4 answer.mov" },
 
-    { "id": "s21_round5_prompt", "type": "image+audio", "title": "Round5 Prompt", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/round 5 prompt.mov" },
+    { "id": "s21_round5_prompt", "type": "image+audio", "title": "Round5 Prompt", "gesture": "game_tts_5_prompt", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/round 5 prompt.mov" },
     { "id": "s22_round5_countdown", "type": "image+audio", "title": "Round5 Countdown", "gesture": "countdown_gesture", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s23_round5_reaction", "type": "audio-select", "title": "Round5 Reaction", "gesture": "celebrate_arms_up", "backgroundSrc": "media/image/Round5GameImage.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
@@ -68,9 +68,9 @@
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
       { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
     ] },
-    { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/round 5 answer.mov" },
+    { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "gesture": "game_tts_5_answer", "src": "media/image/Round5GameImage.jpg", "audio": "media/audio/round 5 answer.mov" },
 
-    { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "src": "media/audio/GAME OUTRO.mov" },
+    { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME OUTRO.mov" },
     { "id": "s26_outro_tts", "type": "audio", "title": "Outro TTS", "src": "media/audio/outro.m4a" }
   ]
 }

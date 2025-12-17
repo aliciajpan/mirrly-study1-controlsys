@@ -65,16 +65,21 @@ function updateStatus(){
 	const pausePlayBtn = qs('#btnPausePlay');
 	if(pausePlayBtn){
 		if(ctrlState.state.paused){
-			pausePlayBtn.textContent = '▶ Play';
+			pausePlayBtn.textContent = '▶ Restart';
 			pausePlayBtn.classList.remove('primary');
 		} else {
-			pausePlayBtn.textContent = '⏸ Pause';
+			pausePlayBtn.textContent = '⏹ Stop';
 			pausePlayBtn.classList.add('primary');
 		}
 	}
 }
 
-async function setIndex(i){await postJSON('/api/state',{index:i});refreshState();}
+async function setIndex(i){
+	// When selecting from list, set index and automatically start playing
+	await postJSON('/api/state',{index:i});
+	await postJSON('/api/state',{command:'play'});
+	refreshState();
+}
 async function sendCommand(command){await postJSON('/api/state',{command});refreshState();}
 
 function setupControls(){
