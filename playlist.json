@@ -14,7 +14,8 @@
       { "label": "Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_diamond" },
       { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_star" },
       { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mov", "gesture": "show_diamond" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" }
+      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" },
+      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_star" }
     ] },
     { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "gesture": "game_tts_1_answer", "src": "media/image/Round1GameImage.jpg", "audio": "media/audio/round 1 answer.mov" },
 
