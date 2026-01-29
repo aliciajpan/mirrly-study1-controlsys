@@ -2,7 +2,7 @@ async function fetchJSON(url){const r=await fetch(url);return r.json();}
 async function postJSON(url,body){await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
 
 // const ctrlState={playlist:null,state:null,prevIndex:null,selectedGesture:null};
-const ctrlState={playlist:null,state:null,prevIndex:null};
+const ctrlState={playlist:null,state:null,prevIndex:null,lastRenderedIndex:null};
 
 function qs(s){return document.querySelector(s);} 
 
@@ -100,9 +100,16 @@ function setupControls(){
 }
 
 function maybeAddSelectionUI(){
+    // if already built UI of current item in sequence of events, do not rebuild!
+    if (ctrlState.lastRenderedIndex === ctrlState.state.index) return;
+
 	const current=ctrlState.playlist.sections[ctrlState.state.index];
 	const panel=qs('#selectionPanel');
 	const container=qs('#selectionButtons');
+
+    // set index to mark already-built status
+    ctrlState.lastRenderedIndex = ctrlState.state.index;
+
 	if(current.type!=='audio-select'){
 		panel.style.display='none';
 		container.innerHTML='';
