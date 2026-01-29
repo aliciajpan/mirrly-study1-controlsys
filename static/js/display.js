@@ -18,7 +18,24 @@ const p=document.createElement('p');p.style.color='#fff';p.textContent=`Unsuppor
 
 function attemptPlay(el){if(!el) return; if(!userInteracted) return; if(el.ended) return; if(typeof el.play==='function'){const pr=el.play(); if(pr&&typeof pr.catch==='function'){pr.catch(()=>{});} }}
 
-function attachEndedAdvance(el,section){if(!el) return; const advanceTypes=['video','audio','image+audio','audio-select']; if(!advanceTypes.includes(section.type)) return; if(section.type==='audio-select' && !disp.state.selection) return; if(typeof el.addEventListener==='function'){el.addEventListener('ended',()=>{postState({command:'next'});});}}
+function attachEndedAdvance(el, section) {
+    if (!el) return; 
+
+    const advanceTypes=['video','audio','image+audio','audio-select']; 
+    if (!advanceTypes.includes(section.type)) return; 
+
+    if (section.type==='audio-select' && !disp.state.selection) return; 
+
+    if (typeof el.addEventListener==='function') {
+        el.addEventListener('ended', () => {
+            if (section.auto_advance === false) {
+                console.log("Auto advance disabled. Waiting for WoZ to proceed");
+                return;
+            }
+            postState({command:'next'});
+        });
+    }
+}
 
 function playSection(section){
 	clearStage();
