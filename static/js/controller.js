@@ -77,8 +77,8 @@ function updateStatus(){
 
 async function setIndex(i){
 	// When selecting from list, set index and automatically start playing
-	await postJSON('/api/state',{index:i});
-	await postJSON('/api/state',{command:'play'});
+	await postJSON('/api/state',{index:i, command:'play'}); // put in one package for less lag
+	// await postJSON('/api/state',{command:'play'});
 	refreshState();
 }
 async function sendCommand(command){await postJSON('/api/state',{command});refreshState();}
