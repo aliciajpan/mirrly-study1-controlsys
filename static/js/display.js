@@ -79,7 +79,11 @@ function playSection(section){
 		p.textContent=`Unknown section type ${section.type}`;
 		st.appendChild(p);
 	}
-	attemptPlay(disp.currentMediaEl);
+
+    setTimeout(() => {
+        attemptPlay(disp.currentMediaEl);
+    }, 250)
+	
 	// Trigger robot gesture for this section
 	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
