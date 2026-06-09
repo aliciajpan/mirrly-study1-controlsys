@@ -126,6 +126,9 @@ def api_state():
     playlist = load_playlist()
     if request.method == 'POST':
         data = request.get_json(force=True) if request.data else {}
+
+        gesture_just_triggered = False
+
         # Update index
         if 'index' in data:
             idx = int(data['index'])
@@ -134,6 +137,8 @@ def api_state():
                 STATE['index'] = idx
                 STATE['selection'] = None  # reset selection when changing section
                 _apply_robot_gesture(idx, playlist)
+                gesture_just_triggered = True
+
         # Commands
         cmd = data.get('command')
         if cmd == 'pause':
@@ -142,22 +147,27 @@ def api_state():
             if robot_client:
                 robot_client.send_command('stop')
                 logger.info("Sent stop command on pause")
+
         elif cmd == 'play':
             STATE['paused'] = False
-            # Restart current section's gesture from beginning
-            current_section = playlist['sections'][STATE['index']]
-            gesture = GestureMapper.get_gesture(current_section)
-            if gesture and robot_client:
-                robot_client.send_command('stop')  # Stop first
-                metadata = GestureMapper.get_metadata(current_section)
-                robot_client.send_gesture(gesture, metadata)  # Then restart
-                logger.info(f"Restarted gesture: {gesture} for section {current_section.get('id')}")
+
+            if not gesture_just_triggered:
+                # Restart current section's gesture from beginning
+                current_section = playlist['sections'][STATE['index']]
+                gesture = GestureMapper.get_gesture(current_section)
+                if gesture and robot_client:
+                    robot_client.send_command('stop')  # Stop first
+                    metadata = GestureMapper.get_metadata(current_section)
+                    robot_client.send_gesture(gesture, metadata)  # Then restart
+                    logger.info(f"Restarted gesture: {gesture} for section {current_section.get('id')}")
+
         elif cmd == 'next':
             new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
             if new_i != STATE['index']:
                 STATE['index'] = new_i
                 STATE['selection'] = None
                 _apply_robot_gesture(new_i, playlist)
+                
         elif cmd == 'prev':
             new_i = max(0, STATE['index'] - 1)
             if new_i != STATE['index']:

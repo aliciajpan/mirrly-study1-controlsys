@@ -1,7 +1,8 @@
 async function fetchJSON(url){const r=await fetch(url);return r.json();}
 async function postJSON(url,body){await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
 
-const ctrlState={playlist:null,state:null,prevIndex:null,selectedGesture:null};
+// const ctrlState={playlist:null,state:null,prevIndex:null,selectedGesture:null};
+const ctrlState={playlist:null,state:null,prevIndex:null,lastRenderedIndex:null};
 
 function qs(s){return document.querySelector(s);} 
 
@@ -76,8 +77,8 @@ function updateStatus(){
 
 async function setIndex(i){
 	// When selecting from list, set index and automatically start playing
-	await postJSON('/api/state',{index:i});
-	await postJSON('/api/state',{command:'play'});
+	await postJSON('/api/state',{index:i, command:'play'}); // put in one package for less lag
+	// await postJSON('/api/state',{command:'play'});
 	refreshState();
 }
 async function sendCommand(command){await postJSON('/api/state',{command});refreshState();}
@@ -99,13 +100,20 @@ function setupControls(){
 }
 
 function maybeAddSelectionUI(){
+    // if already built UI of current item in sequence of events, do not rebuild!
+    if (ctrlState.lastRenderedIndex === ctrlState.state.index) return;
+
 	const current=ctrlState.playlist.sections[ctrlState.state.index];
 	const panel=qs('#selectionPanel');
 	const container=qs('#selectionButtons');
+
+    // set index to mark already-built status
+    ctrlState.lastRenderedIndex = ctrlState.state.index;
+
 	if(current.type!=='audio-select'){
 		panel.style.display='none';
 		container.innerHTML='';
-		ctrlState.selectedGesture=null;
+		// ctrlState.selectedGesture=null;
 		return;
 	}
 	panel.style.display='block';
@@ -117,37 +125,38 @@ function maybeAddSelectionUI(){
 	wrapper.style.flexDirection='column';
 	wrapper.style.gap='12px';
 	
+    // getting rid of this bc answers are hardcoded and only want to display the right answer
 	// Step 1: Gesture Selection (FIRST)
-	const gestureDiv=document.createElement('div');
-	gestureDiv.style.paddingBottom='12px';
-	gestureDiv.style.borderBottom='1px solid #7c6fa6';
+	// const gestureDiv=document.createElement('div');
+	// gestureDiv.style.paddingBottom='12px';
+	// gestureDiv.style.borderBottom='1px solid #7c6fa6';
 	
-	const gestureTitle=document.createElement('div');
-	gestureTitle.textContent='1. Select Winner:';
-	gestureTitle.style.color='#a89ad7';
-	gestureTitle.style.marginBottom='8px';
-	gestureTitle.style.fontSize='0.9em';
-	gestureDiv.appendChild(gestureTitle);
+	// const gestureTitle=document.createElement('div');
+	// gestureTitle.textContent='1. Select Winner:';
+	// gestureTitle.style.color='#a89ad7';
+	// gestureTitle.style.marginBottom='8px';
+	// gestureTitle.style.fontSize='0.9em';
+	// gestureDiv.appendChild(gestureTitle);
 	
-	const gestureButtonsDiv=document.createElement('div');
-	gestureButtonsDiv.style.display='flex';
-	gestureButtonsDiv.style.gap='8px';
+	// const gestureButtonsDiv=document.createElement('div');
+	// gestureButtonsDiv.style.display='flex';
+	// gestureButtonsDiv.style.gap='8px';
 	
-	['show_star','show_diamond'].forEach(g=>{
-		const btn=document.createElement('button');
-		btn.className='btn';
-		if(ctrlState.selectedGesture===g) btn.classList.add('primary');
-		btn.textContent=g.replace('show_','').charAt(0).toUpperCase()+g.replace('show_','').slice(1);
-		btn.style.flex='1';
-		btn.addEventListener('click',()=>{
-			ctrlState.selectedGesture=g;
-			maybeAddSelectionUI(); // Refresh to show selection and enable reactions
-		});
-		gestureButtonsDiv.appendChild(btn);
-	});
+	// ['show_star','show_diamond'].forEach(g=>{
+	// 	const btn=document.createElement('button');
+	// 	btn.className='btn';
+	// 	if(ctrlState.selectedGesture===g) btn.classList.add('primary');
+	// 	btn.textContent=g.replace('show_','').charAt(0).toUpperCase()+g.replace('show_','').slice(1);
+	// 	btn.style.flex='1';
+	// 	btn.addEventListener('click',()=>{
+	// 		ctrlState.selectedGesture=g;
+	// 		maybeAddSelectionUI(); // Refresh to show selection and enable reactions
+	// 	});
+	// 	gestureButtonsDiv.appendChild(btn);
+	// });
 	
-	gestureDiv.appendChild(gestureButtonsDiv);
-	wrapper.appendChild(gestureDiv);
+	// gestureDiv.appendChild(gestureButtonsDiv);
+	// wrapper.appendChild(gestureDiv);
 	
 	// Step 2: Reaction Selection (ONLY ENABLED after gesture selected)
 	const reactionsDiv=document.createElement('div');
@@ -168,18 +177,35 @@ function maybeAddSelectionUI(){
 		const btn=document.createElement('button');
 		btn.className='btn';
 		btn.textContent=opt.label||opt.src;
-		btn.disabled=!ctrlState.selectedGesture; // Disabled until gesture selected
-		btn.style.opacity=ctrlState.selectedGesture?'1':'0.5';
-		btn.style.cursor=ctrlState.selectedGesture?'pointer':'not-allowed';
+		// btn.disabled=!ctrlState.selectedGesture; // Disabled until gesture selected
+		// btn.style.opacity=ctrlState.selectedGesture?'1':'0.5';
+		// btn.style.cursor=ctrlState.selectedGesture?'pointer':'not-allowed';
+
+        // Always enabled now
+        btn.style.opacity='1';
+        btn.style.cursor='pointer';
 		
-		if(ctrlState.selectedGesture){
-			btn.addEventListener('click',async()=>{
-				// Use selected gesture, override option's default
-				await postJSON('/api/state',{selection:{src:opt.src,label:opt.label,gesture:ctrlState.selectedGesture}});
-				ctrlState.selectedGesture=null; // Reset for next reaction
-				refreshState();
-			});
-		}
+		// if(ctrlState.selectedGesture){
+		// 	btn.addEventListener('click',async()=>{
+		// 		// Use selected gesture, override option's default
+		// 		await postJSON('/api/state',{selection:{src:opt.src,label:opt.label,gesture:ctrlState.selectedGesture}});
+		// 		ctrlState.selectedGesture=null; // Reset for next reaction
+		// 		refreshState();
+		// 	});
+		// }
+
+        btn.addEventListener('click',async()=>{
+            // Use opt.gesture directly (hardcoded in JSON) instead of a selected override
+            await postJSON('/api/state',{
+                selection: {
+                    src: opt.src,
+                    label: opt.label,
+                    gesture: opt.gesture // <--- reads from playlist.json
+                }
+            });
+            refreshState();
+        });
+
 		reactionButtonsDiv.appendChild(btn);
 	});
 	

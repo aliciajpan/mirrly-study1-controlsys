@@ -57,25 +57,20 @@ function createElementForSource(src,kind) {
     return p;
 }
 
-function attemptPlay(el) {
-    if(!el) return; 
-    if(!userInteracted) return; 
-    if(el.ended) return; 
-    if(typeof el.play==='function') {
-        const pr=el.play(); 
-        if(pr&&typeof pr.catch==='function'){ 
-            pr.catch(()=>{});
-        } 
-    }
-}
+function attachEndedAdvance(el, section) {
+    if (!el) return; 
 
-function attachEndedAdvance(el,section) {
-    if(!el) return; 
     const advanceTypes=['video','audio','image+audio','audio-select']; 
-    if(!advanceTypes.includes(section.type)) return; 
-    if(section.type==='audio-select' && !disp.state.selection) return; 
-    if(typeof el.addEventListener==='function') {
-        el.addEventListener('ended',()=>{
+    if (!advanceTypes.includes(section.type)) return; 
+
+    if (section.type==='audio-select' && !disp.state.selection) return; 
+
+    if (typeof el.addEventListener==='function') {
+        el.addEventListener('ended', () => {
+            if (section.auto_advance === false) {
+                console.log("Auto advance disabled. Waiting for WoZ to proceed");
+                return;
+            }
             postState({command:'next'});
         });
     }
@@ -123,7 +118,11 @@ function playSection(section){
 		p.textContent=`Unknown section type ${section.type}`;
 		st.appendChild(p);
 	}
-	attemptPlay(disp.currentMediaEl);
+
+    setTimeout(() => {
+        attemptPlay(disp.currentMediaEl);
+    }, 250)
+	
 	// Trigger robot gesture for this section
 	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
