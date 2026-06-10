@@ -71,7 +71,7 @@ def load_playlist() -> Dict[str, Any]:
                     "id": "intro_video",
                     "type": "video",
                     "title": "Presentation: Amblyopia",
-                    "src": "media/video/intro.mp4",
+                    "src": "media/video/amblyopia.mp4",
                     "robot": {"onStart": "present_start", "onEnd": "present_end"}
                 }
             ]
