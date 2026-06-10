@@ -12,6 +12,8 @@ const IMAGE_EXT=['png','jpg','jpeg'];
 
 let userInteracted = false;
 let sidebarOpen = false;
+let countdownInterval = null;
+let countdownDuration = 10;
 
 const disp={playlist:null,state:null,renderedIndex:null,currentMediaEl:null,wasPaused:false};
 async function postState(body) {
@@ -79,42 +81,76 @@ function attachEndedAdvance(el, section) {
 }
 
 function playSection(section){
-	clearStage();
+    clearInterval(countdownInterval);
+    if (qs('#timer-bar-container')) qs('#timer-bar-container').style.display = 'none';
+    if (qs('#ui-overlay')) qs('#ui-overlay').innerHTML = '';
+    
+    clearStage();
 	const st=qs('#stage');
-	if(section.type==='video'){
+
+    // debugging
+    console.log("====== NEW SECTION MOUNTED ======");
+    console.log("ID:", section.id);
+    console.log("Type Evaluated By Backend:", section.type);
+    console.log("Image Path (src):", section.src);
+    console.log("Audio Path (audio):", section.audio);
+    console.log("=================================");
+
+	if(section.type==='video') {
 		const v=createElementForSource(section.src,'video');
 		st.appendChild(v);
 		disp.currentMediaEl=v;
 		attachEndedAdvance(v,section);
-	} else if(section.type==='audio'){
+	} 
+    
+    else if(section.type==='audio') {
 		const a=createElementForSource(section.src,'audio');
 		st.appendChild(a);
 		disp.currentMediaEl=a;
 		attachEndedAdvance(a,section);
-	} else if(section.type==='image'){
+	} 
+    
+    else if(section.type==='image') {
 		const img=createElementForSource(section.src,'image');
 		st.appendChild(img);
-	} else if(section.type==='image+audio'){
+	} 
+    
+    else if(section.type==='image+audio') {
 		const img=createElementForSource(section.src,'image');
 		st.appendChild(img);
 		const a=createElementForSource(section.audio,'audio');
-		a.style.display = 'none'; // Hide audio element
+		a.style.display = 'none'; // hide audio element
 		st.appendChild(a);
 		disp.currentMediaEl=a;
 		attachEndedAdvance(a,section);
-	} else if(section.type==='audio-select'){
-		if(section.backgroundSrc){
+
+        console.log("DEBUGGING -> Current section ID checking for countdown:", section.id); // debugging
+
+        if (section.id.includes('countdown')) {
+            console.log("COUNTDOWN STAGE DETECTED") // debugging
+			startCountdownBar(countdownDuration);  
+		}
+
+        else { // debugging
+            console.log("Not a countdown section (allegedly)")
+        }
+	} 
+    
+    else if(section.type==='audio-select') {
+		if(section.backgroundSrc) {
 			const img=createElementForSource(section.backgroundSrc,'image');
 			st.appendChild(img);
 		}
-		if(disp.state.selection){
+		if(disp.state.selection) {
 			const chosen=createElementForSource(disp.state.selection.src,'audio');
 			chosen.style.display = 'none'; // Hide audio element
 			st.appendChild(chosen);
 			disp.currentMediaEl=chosen;
 			attachEndedAdvance(chosen,section);
 		}
-	} else {
+	} 
+    
+    else {
 		const p=document.createElement('p');
 		p.style.color='#fff';
 		p.textContent=`Unknown section type ${section.type}`;
@@ -125,7 +161,7 @@ function playSection(section){
         attemptPlay(disp.currentMediaEl);
     }, 250)
 	
-	// Trigger robot gesture for this section
+	// trigger robot gesture for this section
 	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
 
@@ -135,7 +171,7 @@ function applyPauseState(){
 		if(typeof disp.currentMediaEl.pause==='function')disp.currentMediaEl.pause();
 		disp.wasPaused = true;
 	} else {
-		// Only reset to beginning if transitioning from paused to playing (restart)
+		// only reset to beginning if transitioning from paused to playing (restart)
 		if(disp.wasPaused && disp.currentMediaEl.currentTime !== undefined){
 			disp.currentMediaEl.currentTime = 0;
 			disp.wasPaused = false;
@@ -145,21 +181,32 @@ function applyPauseState(){
 }
 
 async function poll() {
-    disp.state=await fetchJSON('/api/state');
-    if(!disp.playlist)disp.playlist=await fetchJSON('/api/playlist');
-    if(disp.state.index!==disp.renderedIndex) {
+    disp.state=await fetchJSON('/api/state'); // get global state
+
+    if(!disp.playlist) { // ensure have playlist
+        disp.playlist=await fetchJSON('/api/playlist');
+    }
+
+    if(disp.state.index!==disp.renderedIndex) { // index actually changed
         disp.renderedIndex=disp.state.index;
         disp.wasPaused=false;
         playSection(disp.playlist.sections[disp.state.index]);
     } 
 
-    else {
+    else { // same index
         const section=disp.playlist.sections[disp.state.index];
-        if(section.type==='audio-select' && disp.state.selection) {
-            const st=qs('#stage');
-            if(!st.querySelector('audio') && !st.querySelector('video')) {
+        const st = qs('#stage');
+        const hasMedia = st.querySelector('audio') || st.querySelector('video'); // audio or video currently playing?
+
+        if(section.type==='audio-select' && disp.state.selection) { // mirrly supposed to say smth + rxn chosen
+            if (!hasMedia) {
                 playSection(section);
             } 
+        }
+
+        else if (section.id.includes('countdown') && !hasMedia) {
+            console.log("Poll loop recovery: Forcing initialization of frozen countdown step."); // debugging
+            playSection(section);
         }
     } 
     
@@ -268,6 +315,36 @@ function updateRobotStatusDisplay() {
         statusEl.textContent = 'Robot Disconnected';
         statusEl.style.color = '#ef4444';
     }
+}
+
+function startCountdownBar(sec) {
+    clearInterval(countdownInterval);
+    
+    const container = qs('#timer-bar-container');
+    const bar = qs('#timer-bar');
+    
+    if (!container || !bar) return;
+
+    container.style.display = 'block';
+    bar.style.width = '100%';
+    
+    const totalMs = sec * 1000;
+    let elapsedMs = 0;
+    const updateRateMs = 100; // update every 100ms for smoothness
+    
+    countdownInterval = setInterval(() => {
+        elapsedMs += updateRateMs;
+        const percentageLeft = Math.max(0, 100 - (elapsedMs / totalMs) * 100);
+        
+        bar.style.width = `${percentageLeft}%`;
+        
+        if (elapsedMs >= totalMs) {
+            clearInterval(countdownInterval);
+            container.style.display = 'none'; // hide bar when round ends
+            // automatically push step forward once the countdown runs out ?? ** maybe change this mechanism
+            postState({command: 'next'});
+        }
+    }, updateRateMs);
 }
 
 document.addEventListener('DOMContentLoaded',init);

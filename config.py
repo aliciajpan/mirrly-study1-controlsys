@@ -13,6 +13,11 @@ ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://127.0.0.1:8000")
 ROBOT_WS_ENABLED = os.environ.get("ROBOT_WS_ENABLED", "true").lower() == "true"
 ROBOT_WS_DEBUG = os.environ.get("ROBOT_WS_DEBUG", "false").lower() == "true"
 
+# THIS IS ONLY FOR LOCAL BROWSER TESTING WITH MIRRLY DC'd!!
+ROBOT_WS_ENABLED = False
+ROBOT_WS_DEBUG = False
+ROBOT_WS_URL = "ws://127.0.0.1:8000"
+
 # Error Handling Configuration
 # If True, errors in gesture triggering will be logged but won't block media playback
 # If False, sections with gesture errors will be skipped

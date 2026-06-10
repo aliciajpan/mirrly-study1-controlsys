@@ -91,11 +91,41 @@
         .touch-btn:active { background: #4f46e5; }
         #timer-display { font-size: 3rem; color: #ef4444; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 8px; font-weight: bold; }
 
-      #waiting { color:#fff; font-size:2rem; font-family:system-ui; }
+        #waiting { color:#fff; font-size:2rem; font-family:system-ui; }
+
+        #timer-bar-container {
+            position: fixed;
+            top: 20px;
+            left: 5%;
+            width: 90%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            display: none; /* hidden by default, activated on countdown blocks */
+
+            border: 3px solid #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #9500ff, #d69dff);
+            box-shadow: 0 2px 10px rgba(6, 182, 212, 0.5);
+            transition: width 0.1s linear; /* updates bar size w smooth animation */
+        }
+
     </style>
   </head>
 
   <body>
+    <div id="timer-bar-container">
+      <div id="timer-bar"></div>
+    </div>
+
     <button id="menu-toggle">☰</button>
 
     <div id="control-sidebar">

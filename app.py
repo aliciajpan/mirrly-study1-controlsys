@@ -5,6 +5,8 @@ from typing import List, Dict, Any, Optional
 from flask import Flask, render_template, send_from_directory, jsonify, request
 from dotenv import load_dotenv
 
+import config
+
 from robot_client import RobotWebSocketClient
 from gesture_mapping import GestureMapper
 
@@ -29,9 +31,14 @@ STATE: Dict[str, Any] = {
 }
 
 # Initialize robot WebSocket client
-ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://127.0.0.1:8000")
-ROBOT_WS_ENABLED = os.environ.get("ROBOT_WS_ENABLED", "true").lower() == "true"
-ROBOT_WS_DEBUG = os.environ.get("ROBOT_WS_DEBUG", "false").lower() == "true"
+# ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://127.0.0.1:8000")
+# ROBOT_WS_ENABLED = os.environ.get("ROBOT_WS_ENABLED", "true").lower() == "true"
+# ROBOT_WS_DEBUG = os.environ.get("ROBOT_WS_DEBUG", "false").lower() == "true"
+
+# pull from config.py instead...
+ROBOT_WS_URL = config.ROBOT_WS_URL
+ROBOT_WS_ENABLED = config.ROBOT_WS_ENABLED
+ROBOT_WS_DEBUG = config.ROBOT_WS_DEBUG
 
 robot_client: Optional[RobotWebSocketClient] = None
 
