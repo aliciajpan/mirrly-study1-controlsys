@@ -9,7 +9,9 @@ function qs(s) {
 const VIDEO_EXT=['mp4','mov','webm'];
 const AUDIO_EXT=['mp3','m4a','wav','ogg'];
 const IMAGE_EXT=['png','jpg','jpeg'];
-let userInteracted=false;
+
+let userInteracted = false;
+let sidebarOpen = false;
 
 const disp={playlist:null,state:null,renderedIndex:null,currentMediaEl:null,wasPaused:false};
 async function postState(body) {
@@ -150,6 +152,7 @@ async function poll() {
         disp.wasPaused=false;
         playSection(disp.playlist.sections[disp.state.index]);
     } 
+
     else {
         const section=disp.playlist.sections[disp.state.index];
         if(section.type==='audio-select' && disp.state.selection) {
@@ -158,7 +161,11 @@ async function poll() {
                 playSection(section);
             } 
         }
-    } applyPauseState();}
+    } 
+    
+    applyPauseState();
+    updateRobotStatusDisplay();
+}
 
 function addInteractionOverlay() {
     const st=qs('#stage');
@@ -184,11 +191,83 @@ function addInteractionOverlay() {
 }
 
 async function init(){
-	// Always start paused
+	// always start paused
 	await postState({command:'pause'});
+    setupSidebarControls();
+    disp.playlist = await fetchJSON('/api/playlist');
 	await poll();
+    renderSidebarSections();
 	addInteractionOverlay();
-	setInterval(poll,1000);
+	setInterval(poll,1000); // check every 1000 ms
+}
+
+function setupSidebarControls() {
+    const toggleBtn = qs('#menu-toggle');
+    const sidebar = qs('#control-sidebar');
+    
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebarOpen = !sidebarOpen;
+        if (sidebarOpen) {
+            sidebar.classList.add('open');
+            toggleBtn.textContent = 'Close';
+        } else {
+            sidebar.classList.remove('open');
+            toggleBtn.textContent = '☰';
+        }
+    });
+
+    // close the drawer if a user taps anywhere out on the main stage
+    qs('#stage').addEventListener('click', () => {
+        if (sidebarOpen) {
+            sidebarOpen = false;
+            sidebar.classList.remove('open');
+            toggleBtn.textContent = '☰';
+        }
+    });
+}
+
+function renderSidebarSections() {
+    if (!disp.playlist) return;
+    
+    const list = qs('#sectionList');
+    list.innerHTML = '';
+    
+    disp.playlist.sections.forEach((s, i) => {
+        const li = document.createElement('li');
+        
+        li.textContent = `${i + 1}. ${s.title || s.id}`;
+        
+        if (i === disp.state.index) {
+            li.className = 'active';
+        }
+        
+        li.addEventListener('click', async () => {
+            await postState({ index: i, command: 'play' });
+            // close panel after selecting an index to clear the screen area ?
+            document.getElementById('menu-toggle').click();
+        });
+        
+        list.appendChild(li);
+    });
+
+    const activeItem = list.querySelector('li.active');
+        if (activeItem && disp.renderedIndex !== disp.state.index) {
+            activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+}
+
+function updateRobotStatusDisplay() {
+    const statusEl = qs('#robotStatus');
+    if (!statusEl || !disp.state) return;
+
+    if (disp.state.robot_status === 'connected') {
+        statusEl.textContent = 'Robot Connected';
+        statusEl.style.color = '#4ade80';
+    } else {
+        statusEl.textContent = 'Robot Disconnected';
+        statusEl.style.color = '#ef4444';
+    }
 }
 
 document.addEventListener('DOMContentLoaded',init);

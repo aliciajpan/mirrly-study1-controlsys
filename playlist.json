@@ -6,8 +6,8 @@
     { "id": "s4_game_intro", "type": "image+audio", "title": "Game Intro IRL", "gesture": "intro_game", "src": "media/image/mirrly_game_time.jpg", "audio": "media/audio/tabletGameMechanism.mp3", "auto_advance": false },
 
     { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "gesture": "game_tts_1_prompt", "src": "media/image/Rd1New.jpg", "audio": "media/audio/round 1 prompt.mov" },
-    { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd1New.jpg.jpg", "audio": "media/audio/COUNTDOWN.mov" },
-    { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "backgroundSrc": "media/image/Rd1New.jpg.jpg", "options": [
+    { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd1New.jpg", "audio": "media/audio/COUNTDOWN.mov" },
+    { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "backgroundSrc": "media/image/Rd1New.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
       { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_star" },
       { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_star" },
@@ -17,9 +17,9 @@
       { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_star" },
       { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_star" }
     ] },
-    { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "gesture": "game_tts_1_answer", "src": "media/image/Rd1New.jpg.jpg", "audio": "media/audio/round 1 answer.mov", "auto_advance": false },
+    { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "gesture": "game_tts_1_answer", "src": "media/image/Rd1New.jpg", "audio": "media/audio/round 1 answer.mov", "auto_advance": false },
 
-    { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "gesture": "game_tts_2_prompt", "src": "media/image/Rd2New.jpg.jpg", "audio": "media/audio/round 2 prompt.mov" },
+    { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "gesture": "game_tts_2_prompt", "src": "media/image/Rd2New.jpg", "audio": "media/audio/round 2 prompt.mov" },
     { "id": "s10_round2_countdown", "type": "image+audio", "title": "Round2 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd2New.jpg", "audio": "media/audio/COUNTDOWN.mov" },
     { "id": "s11_round2_reaction", "type": "audio-select", "title": "Round2 Reaction", "backgroundSrc": "media/image/Rd2New.jpg", "options": [
       { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_diamond" },
@@ -76,6 +76,6 @@
     { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "gesture": "game_tts_5_answer", "src": "media/image/Rd5New.jpg", "audio": "media/audio/round 5 answer.mov", "auto_advance": false },
 
     { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME OUTRO.mov", "auto_advance": false },
-    { "id": "s26_outro_tts", "type": "image+audio", "title": "Outro TTS", "gesture": "overall_outro", "src": "media/image/mirrly_goodbye.jpg", "audio": "media/audio/MirrlyOverallOutro.mp3 }
+    { "id": "s26_outro_tts", "type": "image+audio", "title": "Outro TTS", "gesture": "overall_outro", "src": "media/image/mirrly_goodbye.jpg", "audio": "media/audio/MirrlyOverallOutro.mp3"}
   ]
 }
