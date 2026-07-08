@@ -8,70 +8,65 @@
     { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "gesture": "game_tts_1_prompt", "src": "media/image/Rd1New.jpg", "audio": "media/audio/round 1 prompt.mov" },
     { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd1New.jpg", "audio": "media/audio/countdownTimer.mp3" },
     { "id": "s7_round1_reaction", "type": "audio-select", "title": "Round1 Reaction", "backgroundSrc": "media/image/Rd1New.jpg", "options": [
-      { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
-      { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_star" },
-      { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_star" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" },
-      { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov", "gesture": "show_star" },
-      { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mp3", "gesture": "show_star" },
-      { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_star" },
-      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_star" }
+      { "label": "Expert", "src": "media/audio/response/_expert.mov", "gesture": "show_star" },
+      { "label": "So Good", "src": "media/audio/response/_goodAtThis.mov", "gesture": "show_star" },
+      { "label": "Right Again", "src": "media/audio/response/_rightAgain.mov", "gesture": "show_star" },
+      { "label": "Getting Better", "src": "media/audio/response/_gettingBetter.mov", "gesture": "show_star" },
+      { "label": "Tough One", "src": "media/audio/response/_toughOne.mov", "gesture": "show_star" },
+      { "label": "Whoops", "src": "media/audio/response/_confused.mp3", "gesture": "show_star" },
+      { "label": "Still Confused", "src": "media/audio/response/_stillConfused.mov", "gesture": "show_star" }
     ] },
     { "id": "s8_round1_answer", "type": "image+audio", "title": "Round1 Answer", "gesture": "game_tts_1_answer", "src": "media/image/Rd1New.jpg", "audio": "media/audio/round 1 answer.mov", "auto_advance": false },
 
     { "id": "s9_round2_prompt", "type": "image+audio", "title": "Round2 Prompt", "gesture": "game_tts_2_prompt", "src": "media/image/Rd2New.jpg", "audio": "media/audio/round 2 prompt.mov" },
     { "id": "s10_round2_countdown", "type": "image+audio", "title": "Round2 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd2New.jpg", "audio": "media/audio/countdownTimer.mp3" },
     { "id": "s11_round2_reaction", "type": "audio-select", "title": "Round2 Reaction", "backgroundSrc": "media/image/Rd2New.jpg", "options": [
-      { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_diamond" },
-      { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_diamond" },
-      { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_diamond" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_diamond" },
-      { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov", "gesture": "show_diamond" },
-      { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mp3", "gesture": "show_diamond" },
-      { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_diamond" },
-      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_diamond" }
+      { "label": "Expert", "src": "media/audio/response/_expert.mov", "gesture": "show_diamond" },
+      { "label": "So Good", "src": "media/audio/response/_goodAtThis.mov", "gesture": "show_diamond" },
+      { "label": "Right Again", "src": "media/audio/response/_rightAgain.mov", "gesture": "show_diamond" },
+      { "label": "Getting Better", "src": "media/audio/response/_gettingBetter.mov", "gesture": "show_diamond" },
+      { "label": "Tough One", "src": "media/audio/response/_toughOne.mov", "gesture": "show_diamond" },
+      { "label": "Whoops", "src": "media/audio/response/_confused.mp3", "gesture": "show_diamond" },
+      { "label": "Still Confused", "src": "media/audio/response/_stillConfused.mov", "gesture": "show_diamond" }
     ] },
     { "id": "s12_round2_answer", "type": "image+audio", "title": "Round2 Answer", "gesture": "game_tts_2_answer", "src": "media/image/Rd2New.jpg", "audio": "media/audio/round 2 answer.mov", "auto_advance": false },
 
     { "id": "s13_round3_prompt", "type": "image+audio", "title": "Round3 Prompt", "gesture": "game_tts_3_prompt", "src": "media/image/Rd3New.jpg", "audio": "media/audio/round 3 prompt.mov" },
     { "id": "s14_round3_countdown", "type": "image+audio", "title": "Round3 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd3New.jpg", "audio": "media/audio/countdownTimer.mp3" },
     { "id": "s15_round3_reaction", "type": "audio-select", "title": "Round3 Reaction", "backgroundSrc": "media/image/Rd3New.jpg", "options": [
-      { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
-      { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_star" },
-      { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_star" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" },
-      { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov", "gesture": "show_star" },
-      { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mp3", "gesture": "show_star" },
-      { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_star" },
-      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_star" }
+      { "label": "Expert", "src": "media/audio/response/_expert.mov", "gesture": "show_star" },
+      { "label": "So Good", "src": "media/audio/response/_goodAtThis.mov", "gesture": "show_star" },
+      { "label": "Right Again", "src": "media/audio/response/_rightAgain.mov", "gesture": "show_star" },
+      { "label": "Getting Better", "src": "media/audio/response/_gettingBetter.mov", "gesture": "show_star" },
+      { "label": "Tough One", "src": "media/audio/response/_toughOne.mov", "gesture": "show_star" },
+      { "label": "Whoops", "src": "media/audio/response/_confused.mp3", "gesture": "show_star" },
+      { "label": "Still Confused", "src": "media/audio/response/_stillConfused.mov", "gesture": "show_star" }
     ] },
     { "id": "s16_round3_answer", "type": "image+audio", "title": "Round3 Answer", "gesture": "game_tts_3_answer", "src": "media/image/Rd3New.jpg", "audio": "media/audio/round 3 answer.mov", "auto_advance": false },
 
     { "id": "s17_round4_prompt", "type": "image+audio", "title": "Round4 Prompt", "gesture": "game_tts_4_prompt", "src": "media/image/Rd4New.jpg", "audio": "media/audio/round 4 prompt.mov" },
     { "id": "s18_round4_countdown", "type": "image+audio", "title": "Round4 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd4New.jpg", "audio": "media/audio/countdownTimer.mp3" },
     { "id": "s19_round4_reaction", "type": "audio-select", "title": "Round4 Reaction", "backgroundSrc": "media/image/Rd4New.jpg", "options": [
-      { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_star" },
-      { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_star" },
-      { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_star" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_star" },
-      { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov", "gesture": "show_star" },
-      { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mp3", "gesture": "show_star" },
-      { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_star" },
-      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_star" }
+      { "label": "Expert", "src": "media/audio/response/_expert.mov", "gesture": "show_star" },
+      { "label": "So Good", "src": "media/audio/response/_goodAtThis.mov", "gesture": "show_star" },
+      { "label": "Right Again", "src": "media/audio/response/_rightAgain.mov", "gesture": "show_star" },
+      { "label": "Getting Better", "src": "media/audio/response/_gettingBetter.mov", "gesture": "show_star" },
+      { "label": "Tough One", "src": "media/audio/response/_toughOne.mov", "gesture": "show_star" },
+      { "label": "Whoops", "src": "media/audio/response/_confused.mp3", "gesture": "show_star" },
+      { "label": "Still Confused", "src": "media/audio/response/_stillConfused.mov", "gesture": "show_star" }
     ] },
     { "id": "s20_round4_answer", "type": "image+audio", "title": "Round4 Answer", "gesture": "game_tts_4_answer", "src": "media/image/Rd4New.jpg", "audio": "media/audio/round 4 answer.mov", "auto_advance": false },
 
     { "id": "s21_round5_prompt", "type": "image+audio", "title": "Round5 Prompt", "gesture": "game_tts_5_prompt", "src": "media/image/Rd5New.jpg", "audio": "media/audio/round 5 prompt.mov" },
     { "id": "s22_round5_countdown", "type": "image+audio", "title": "Round5 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd5New.jpg", "audio": "media/audio/countdownTimer.mp3" },
     { "id": "s23_round5_reaction", "type": "audio-select", "title": "Round5 Reaction", "backgroundSrc": "media/image/Rd5New.jpg", "options": [
-      { "label": "Expert", "src": "media/audio/response/_wow youre an expert.mov", "gesture": "show_diamond" },
-      { "label": "So Good", "src": "media/audio/response/_wow youre so good at this.mov", "gesture": "show_diamond" },
-      { "label": "Right Again", "src": "media/audio/response/_right again.mov", "gesture": "show_diamond" },
-      { "label": "Getting Better", "src": "media/audio/response/_youre getting better at this.mov", "gesture": "show_diamond" },
-      { "label": "Tough One", "src": "media/audio/response/_oh that was a tough one.mov", "gesture": "show_diamond" },
-      { "label": "Whoops", "src": "media/audio/response/_whoops i think we're confused.mp3", "gesture": "show_diamond" },
-      { "label": "Still Confused", "src": "media/audio/response/_oh no i think we're still confused.mov", "gesture": "show_diamond" },
-      { "label": "Split 50/50", "src": "media/audio/response/_fifty.mp3", "gesture": "show_diamond" }
+      { "label": "Expert", "src": "media/audio/response/_expert.mov", "gesture": "show_diamond" },
+      { "label": "So Good", "src": "media/audio/response/_goodAtThis.mov", "gesture": "show_diamond" },
+      { "label": "Right Again", "src": "media/audio/response/_rightAgain.mov", "gesture": "show_diamond" },
+      { "label": "Getting Better", "src": "media/audio/response/_gettingBetter.mov", "gesture": "show_diamond" },
+      { "label": "Tough One", "src": "media/audio/response/_toughOne.mov", "gesture": "show_diamond" },
+      { "label": "Whoops", "src": "media/audio/response/_confused.mp3", "gesture": "show_diamond" },
+      { "label": "Still Confused", "src": "media/audio/response/_stillConfused.mov", "gesture": "show_diamond" }
     ] },
     { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "gesture": "game_tts_5_answer", "src": "media/image/Rd5New.jpg", "audio": "media/audio/round 5 answer.mov", "auto_advance": false },
 

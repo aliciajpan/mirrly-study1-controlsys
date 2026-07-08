@@ -8,25 +8,25 @@
   },
   "response_buckets": {
     "correct": [
-      {"src": "media/audio/response/_wow youre so good at this.mov"},
-      {"src": "media/audio/response/_wow youre an expert.mov"}
+      {"src": "media/audio/response/_goodAtThis.mov"},
+      {"src": "media/audio/response/_expert.mov"}
     ],
     "correct_again": [
-      {"src": "media/audio/response/_right again.mov"}
+      {"src": "media/audio/response/_rightAgain.mov"}
     ],
     "correct_after_wrong": [
-      {"src": "_youre getting better at this.mov"}
+      {"src": "media/audio/response/_gettingBetter.mov"}
     ],
     "wrong": [
-      {"src": "media/audio/response/_oh that was a tough one.mov"},
-      {"src": "media/audio/response/_whoops i think we're confused.mp3"}
+      {"src": "media/audio/response/_toughOne.mov"},
+      {"src": "media/audio/response/_confused.mp3"}
     ],
     "wrong_again": [
-      {"src": "media/audio/response/_oh no i think we're still confused.mov"}
+      {"src": "media/audio/response/_stillConfused.mov"}
     ],
     "timeout": [
-      {"src": "media/audio/response/dwTimeUp.mp3"},
-      {"src": "media/audio/response/timeUpCanExplain.mp3"}
+      {"src": "media/audio/response/_dwTimeUp.mp3"},
+      {"src": "media/audio/response/_timeUpCanExplain.mp3"}
     ]
   }
 }

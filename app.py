@@ -90,7 +90,7 @@ def load_playlist() -> Dict[str, Any]:
         return json.load(f)
     
 def load_gameconfig() -> Dict[str, Any]:
-    if not os.path.exists(GAMECONFIG_PATH_PATH):
+    if not os.path.exists(GAMECONFIG_PATH):
         return { # just return answer key if file not found
             "answer_key": {
                 "round1": "LS",
@@ -100,7 +100,7 @@ def load_gameconfig() -> Dict[str, Any]:
                 "round5": "RS"
             }
         }
-    with open(GAMECONFIG_PATH_PATH, "r", encoding="utf-8") as f:
+    with open(GAMECONFIG_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
 @app.route("/")
@@ -223,6 +223,89 @@ def api_state():
 @app.route('/api/submit_answer', methods=['POST'])
 def submit_answer():
     global STATE
+    data = request.get_json(force=True) if request.data else {} # force ignores mimetype
+    answer_side = data.get('side') # "LS" or "RS"
+    
+    # find where currently in playlist
+    playlist = load_playlist()
+    current_section = playlist["sections"][STATE["index"]]
+    section_id = current_section.get("id", "")
+    # ^ would look smth like s9_round2_countdown
+    
+    # get game round num from ID string
+    game_round = None
+    for i in range (1,6):
+        if (f"round{i}" in section_id.replace("_", "") or f"round_{i}" in section_id):
+            game_round = str(i)
+            break
+
+    if not game_round:
+        return jsonify({"error": "Didn't identify a numbered game round"}), 400
+    
+    try:
+        config_data = load_gameconfig()
+    except Exception:
+        # fallback dictionary matching load_gameconfig logic
+        config_data = {
+            "answer_key": {"round1": "LS", "round2": "RS", "round3": "LS", "round4": "LS", "round5": "RS"},
+            "response_buckets": {"correct": [], "correct_again": [], "correct_after_wrong": [], "wrong": [], "wrong_again": []}
+        }
+
+    # check correctness
+    round_key = f"round{game_round}"
+    correct_answer = config_data.get("answer_key", {}).get(round_key)
+    is_correct = (answer_side == correct_answer)
+    result_tag = 1 if is_correct else 0 # 1 means correct
+
+    history = STATE.get("game_history", [])
+    buckets = config_data.get("response_buckets", {})
+    chosen_audio = {"src": ""} # fallback audio structure
+
+    if is_correct:
+        if len(history) > 0 and history[-1] == 1 and buckets.get("correct_again"):
+            chosen_audio = random.choice(buckets["correct_again"])
+        elif len(history) > 0 and history[-1] == 0 and buckets.get("correct_after_wrong"):
+            chosen_audio = random.choice(buckets["correct_after_wrong"])
+        elif buckets.get("correct"):
+            chosen_audio = random.choice(buckets["correct"])
+    else:
+        if len(history) > 0 and history[-1] == 0 and buckets.get("wrong_again"):
+            chosen_audio = random.choice(buckets["wrong_again"])
+        elif buckets.get("wrong"):
+            chosen_audio = random.choice(buckets["wrong"])
+    # note possible case where history[idx] returns "" or None, so explicit check 1 or 0
+
+    if correct_answer == "LS":
+        dynamic_gesture = "show_LS"
+    elif correct_answer == "RS":
+        dynamic_gesture = "show_RS"
+    else:
+        dynamic_gesture = None  # fallback
+
+    STATE["game_history"].append(result_tag)
+    STATE["selection"] = {
+        "src": chosen_audio.get("src", ""),
+        "label": result_tag,
+        "gesture": dynamic_gesture  # sends 'show_LS' or 'show_RS' to robot repo
+    }
+
+    if robot_client and dynamic_gesture: # if websocket live/connected
+        robot_client.send_command('stop')
+        metadata = {'section_id': section_id, 'round': game_round, 'type': 'automated_touch'}
+        robot_client.send_gesture(dynamic_gesture, metadata)
+
+    # go to next section (without overshooting)
+    new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
+    STATE['index'] = new_i
+
+    return jsonify({
+        'index': STATE['index'],
+        'paused': STATE['paused'],
+        'selection': STATE['selection'],
+        'total': len(playlist['sections']),
+        'robot_status': STATE['robot_status'],
+        'robot_message': STATE['robot_message'],
+    })
 
 if __name__ == "__main__":
     init_robot_client()
