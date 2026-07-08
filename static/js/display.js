@@ -527,6 +527,13 @@ function startCountdownBar(sec) {
         if (elapsedMs >= totalMs) {
             clearInterval(countdownInterval);
             container.style.display = 'none'; // hide bar when round ends
+
+            // once timer runs out, disable LS/RS hitboxes
+            const tapOverlay = document.getElementById('dynamic-tap-overlay');
+            if (tapOverlay) {
+                tapOverlay.remove();
+            }
+
             // automatically push step forward once the countdown runs out ?? ** maybe change this mechanism
             postState({command: 'next'});
         }
