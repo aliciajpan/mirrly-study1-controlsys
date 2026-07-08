@@ -15,11 +15,30 @@ let sidebarOpen = false;
 let countdownInterval = null;
 let countdownDuration = 10;
 
-const disp={playlist:null,state:null,renderedIndex:null,currentMediaEl:null,wasPaused:false};
+const disp = { // global display tracker
+    playlist: null,
+    state: null,
+    renderedIndex: null,
+    currentMediaEl: null,
+    wasPaused: false
+};
+
 async function postState(body) {
     try {
-        await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    } catch(e) {}}
+        const server_resp = await fetch('/api/state',
+            {   
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+
+        disp.state = await server_resp.json(); // update global with new server state
+    } 
+    
+    catch(e) {
+        console.error("postState broke:", e)
+    }
+}
 
 function ext(src) {
     const p=src.split('?')[0];const parts=p.split('.');return parts.length>1?parts.pop().toLowerCase():'';
@@ -276,10 +295,17 @@ function addInteractionOverlay() {
     ov.style.fontFamily='system-ui';
     ov.style.cursor='pointer';
     ov.textContent='Click to Start';
-    ov.addEventListener('click',()=>{userInteracted=true;ov.remove();
-        if(!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(()=>{});
-        } attemptPlay(disp.currentMediaEl);
+    ov.addEventListener('click', async () => {
+        userInteracted = true;
+        ov.remove();
+
+        // if(!document.fullscreenElement) {
+        //     document.documentElement.requestFullscreen().catch(()=>{});
+        // } 
+        
+        await postState({command: 'play'});
+
+        attemptPlay(disp.currentMediaEl);
     });
     st.appendChild(ov);
 }
