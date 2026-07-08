@@ -88,6 +88,12 @@ function attachEndedAdvance(el, section) {
 
     if (section.type==='audio-select' && !disp.state.selection) return; 
 
+    // audio ending on countdown is not adv condition!! only if user answers OR timer runs out!!
+    if (section.id && section.id.includes('countdown')) {
+        console.log("Audio track completed on a countdown screen. Ignoring auto-advance to protect timer.");
+        return;
+    }
+
     if (typeof el.addEventListener==='function') {
         el.addEventListener('ended', () => {
             if (section.auto_advance === false) {
@@ -335,11 +341,13 @@ function playSection(section){
 }
 
 function applyPauseState(){
-	if(!disp.currentMediaEl)return;
-	if(disp.state.paused){
-		if(typeof disp.currentMediaEl.pause==='function')disp.currentMediaEl.pause();
-		disp.wasPaused = true;
-	} else {
+	if(!disp.currentMediaEl) return;
+	if(disp.state.paused) {
+            if(typeof disp.currentMediaEl.pause==='function') disp.currentMediaEl.pause();
+            disp.wasPaused = true;
+	} 
+    
+    else {
 		// only reset to beginning if transitioning from paused to playing (restart)
 		if(disp.wasPaused && disp.currentMediaEl.currentTime !== undefined){
 			disp.currentMediaEl.currentTime = 0;
@@ -374,10 +382,11 @@ async function poll() {
             } 
         }
 
-        else if (section.id.includes('countdown') && !hasMedia) {
-            console.log("Poll loop recovery: Forcing initialization of frozen countdown step"); // debugging
-            playSection(section);
-        }
+        // else if (section.id.includes('countdown') && !hasMedia) {
+        //     console.log("Poll loop recovery: Forcing initialization of frozen countdown step"); // debugging
+        //     playSection(section);
+        // }
+        // ^ shouldn't be using presence of media to determine if countdown is valid...? time of audio vs countdown bar length...
     } 
     
     applyPauseState();
