@@ -118,6 +118,37 @@
             transition: width 0.1s linear; /* updates bar size w smooth animation */
         }
 
+        .nav-next-btn {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 18px 32px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 99999; /* floats above everything, including the stage */
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-next-btn:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .nav-next-btn:active {
+            transform: translateY(-50%) scale(0.98);
+        }
+
     </style>
   </head>
 

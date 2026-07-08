@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import random
 from typing import List, Dict, Any, Optional
 from flask import Flask, render_template, send_from_directory, jsonify, request
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ load_dotenv()
 APP_TITLE = "Mirrly HRI Study"
 MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "static", "media")
 PLAYLIST_PATH = os.path.join(os.path.dirname(__file__), "playlist.json")
+GAMECONFIG_PATH = os.path.join(os.path.dirname(__file__), "game_config.json")
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ STATE: Dict[str, Any] = {
     "selection": None,  # for audio-select chosen option {src,label}
     "robot_status": "disconnected",
     "robot_message": None,
+    "game_history": []
 }
 
 # Initialize robot WebSocket client
@@ -85,7 +88,20 @@ def load_playlist() -> Dict[str, Any]:
         }
     with open(PLAYLIST_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
-
+    
+def load_gameconfig() -> Dict[str, Any]:
+    if not os.path.exists(GAMECONFIG_PATH_PATH):
+        return { # just return answer key if file not found
+            "answer_key": {
+                "round1": "LS",
+                "round2": "RS",
+                "round3": "LS",
+                "round4": "LS",
+                "round5": "RS"
+            }
+        }
+    with open(GAMECONFIG_PATH_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 @app.route("/")
 def controller():
@@ -97,17 +113,14 @@ def display():
     # Fullscreen participant display
     return render_template("display.html")
 
-
 @app.route("/api/playlist")
 def api_playlist():
     return jsonify(load_playlist())
-
 
 # Static media passthrough (optional, Flask can serve static automatically)
 @app.route('/media/<path:filename>')
 def media(filename):
     return send_from_directory(MEDIA_ROOT, filename)
-
 
 def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
     """Trigger robot gesture for the new section."""
@@ -126,7 +139,6 @@ def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
             logger.info(f"Gesture triggered: {gesture} for section {section.get('id')}")
     except Exception as e:
         logger.error(f"Error triggering robot gesture: {e}")
-
 
 @app.route('/api/state', methods=['GET', 'POST'])
 def api_state():
@@ -208,6 +220,9 @@ def api_state():
         'robot_message': STATE['robot_message'],
     })
 
+@app.route('/api/submit_answer', methods=['POST'])
+def submit_answer():
+    global STATE
 
 if __name__ == "__main__":
     init_robot_client()

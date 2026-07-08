@@ -80,21 +80,28 @@ function attachEndedAdvance(el, section) {
     }
 }
 
+function attemptPlay(element) {
+    if (!element || typeof element.play !== 'function') return;
+    if (!userInteracted) {
+        console.log("Audio/Video playback deferred: waiting for initial user overlay interaction.");
+        return;
+    }
+    element.play().catch(err => {
+        console.warn("Playback failed or was blocked by browser autoplay rules:", err);
+    });
+}
+
 function playSection(section){
     clearInterval(countdownInterval);
     if (qs('#timer-bar-container')) qs('#timer-bar-container').style.display = 'none';
     if (qs('#ui-overlay')) qs('#ui-overlay').innerHTML = '';
+    const oldBtn = qs('.nav-next-btn');
+    if (oldBtn) {
+        oldBtn.remove();
+    }
     
     clearStage();
 	const st=qs('#stage');
-
-    // debugging
-    console.log("====== NEW SECTION MOUNTED ======");
-    console.log("ID:", section.id);
-    console.log("Type Evaluated By Backend:", section.type);
-    console.log("Image Path (src):", section.src);
-    console.log("Audio Path (audio):", section.audio);
-    console.log("=================================");
 
 	if(section.type==='video') {
 		const v=createElementForSource(section.src,'video');
@@ -124,15 +131,55 @@ function playSection(section){
 		disp.currentMediaEl=a;
 		attachEndedAdvance(a,section);
 
-        console.log("DEBUGGING -> Current section ID checking for countdown:", section.id); // debugging
-
         if (section.id.includes('countdown')) {
-            console.log("COUNTDOWN STAGE DETECTED") // debugging
 			startCountdownBar(countdownDuration);  
+
+            // invisible hitboxes for user to tap an ans for game
+            const overlay = qs('#ui-overlay');
+
+            overlay.innerHTML = `
+                <div style="position: fixed; inset: 0; display: flex; z-index: 99999;">
+                    <div id="left-touch-zone" style="flex: 1; height: 100%; cursor: pointer; background: rgba(0,0,0,0.01);"></div>
+                    <div id="right-touch-zone" style="flex: 1; height: 100%; cursor: pointer; background: rgba(0,0,0,0.01);"></div>
+                </div>
+            `;
+
+            qs('#left-touch-zone').addEventListener('click', async () => {
+                console.log("Tablet Input Captured: LEFT SIDE (LS)");
+                overlay.innerHTML = ''; // clear hitboxes to prevent double taps
+                clearInterval(countdownInterval); // stop countdown bar
+                
+                await fetch('/api/submit_answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ side: "LS" })
+                });
+            });
+
+            qs('#right-touch-zone').addEventListener('click', async () => {
+                console.log("Tablet Input Captured: RIGHT SIDE (RS)");
+                overlay.innerHTML = ''; 
+                clearInterval(countdownInterval); 
+                
+                await fetch('/api/submit_answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ side: "RS" })
+                });
+            });
 		}
 
-        else { // debugging
-            console.log("Not a countdown section (allegedly)")
+        if (section.id.includes('answer')) {  
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'nav-next-btn';
+            nextBtn.innerHTML = 'Next Round ➔';
+            
+            nextBtn.addEventListener('click', () => {
+                nextBtn.remove();
+                postState({ command: 'next' });
+            });
+            
+            document.body.appendChild(nextBtn);
         }
 	} 
     
@@ -143,7 +190,7 @@ function playSection(section){
 		}
 		if(disp.state.selection) {
 			const chosen=createElementForSource(disp.state.selection.src,'audio');
-			chosen.style.display = 'none'; // Hide audio element
+			chosen.style.display = 'none'; // hide audio element
 			st.appendChild(chosen);
 			disp.currentMediaEl=chosen;
 			attachEndedAdvance(chosen,section);
@@ -205,7 +252,7 @@ async function poll() {
         }
 
         else if (section.id.includes('countdown') && !hasMedia) {
-            console.log("Poll loop recovery: Forcing initialization of frozen countdown step."); // debugging
+            console.log("Poll loop recovery: Forcing initialization of frozen countdown step"); // debugging
             playSection(section);
         }
     } 
