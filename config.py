@@ -28,7 +28,7 @@ ROBOT_MAX_RETRIES = int(os.environ.get("ROBOT_MAX_RETRIES", "3"))
 ROBOT_RECONNECT_TIMEOUT = int(os.environ.get("ROBOT_RECONNECT_TIMEOUT", "5"))  # seconds
 
 # Flask Server Configuration
-PORT = int(os.environ.get("PORT", "5000"))
+PORT = int(os.environ.get("PORT", "5001"))
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # Feature Flags
