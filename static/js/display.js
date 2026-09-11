@@ -15,6 +15,8 @@ let sidebarOpen = false;
 let countdownInterval = null;
 let countdownDuration = 10;
 let attemptStartTime = null; // get rxn time tracker directly from countdown bar to sync in logs
+let isMuted = false;
+let currentVolume = 1.0;
 
 const disp = { // global display tracker
     playlist: null,
@@ -112,6 +114,11 @@ function attemptPlay(element) {
         console.log("Audio/Video playback deferred: waiting for initial user overlay interaction.");
         return;
     }
+
+    // preserve sidebar volume & mute settings
+    element.muted = isMuted;
+    element.volume = currentVolume;
+
     element.play().catch(err => {
         console.warn("Playback failed or was blocked by browser autoplay rules:", err);
     });
@@ -333,9 +340,23 @@ function playSection(section){
 
         st.appendChild(container);
 
-        qs('#disp-blur-none').addEventListener('click', () => postState({ blur_side: 'none' }));
-        qs('#disp-blur-left').addEventListener('click', () => postState({ blur_side: 'left' }));
-        qs('#disp-blur-right').addEventListener('click', () => postState({ blur_side: 'right' }));
+        // qs('#disp-blur-none').addEventListener('click', () => postState({ blur_side: 'none' }));
+        // qs('#disp-blur-left').addEventListener('click', () => postState({ blur_side: 'left' }));
+        // qs('#disp-blur-right').addEventListener('click', () => postState({ blur_side: 'right' }));
+
+        // # TODO: Test this change 
+        qs('#disp-blur-none').addEventListener('click', () => {
+            applyCameraBlur('none');
+            postState({ blur_side: 'none' });
+        });
+        qs('#disp-blur-left').addEventListener('click', () => {
+            applyCameraBlur('left');
+            postState({ blur_side: 'left' });
+        });
+        qs('#disp-blur-right').addEventListener('click', () => {
+            applyCameraBlur('right');
+            postState({ blur_side: 'right' });
+        });
 
         // apply whatever blur mode is stored in global state
         applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
@@ -348,29 +369,35 @@ function playSection(section){
 		st.appendChild(p);
 	}
 
-    setTimeout(() => {
-        attemptPlay(disp.currentMediaEl);
-    }, 250)
+    if (disp.currentMediaEl) {
+        setTimeout(() => {
+            attemptPlay(disp.currentMediaEl);
+        }, 250);
+    }
 	
 	// trigger robot gesture for this section
 	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
 }
 
 function applyPauseState(){
-	if(!disp.currentMediaEl) return;
-	if(disp.state.paused) {
-            if(typeof disp.currentMediaEl.pause==='function') disp.currentMediaEl.pause();
-            disp.wasPaused = true;
-	} 
+	const playPauseBtn = qs('#disp-btn-play-pause');
+    if (playPauseBtn && disp.state) {
+        playPauseBtn.textContent = disp.state.paused ? '▶ Play' : '⏸ Pause';
+        playPauseBtn.style.background = disp.state.paused ? '#a3be8c' : '#4c566a';
+    }
+
+    if(!disp.currentMediaEl) return;
+    if(disp.state.paused) {
+        if(typeof disp.currentMediaEl.pause==='function') disp.currentMediaEl.pause();
+        disp.wasPaused = true;
+    } 
     
     else {
-		// OLD: only reset to beginning if transitioning from paused to playing (restart)
-        // only resume if explicitly paused mid-playback + not ended yet
-		if(disp.wasPaused && disp.currentMediaEl.ended){
-			disp.wasPaused = false;
+        if(disp.wasPaused && disp.currentMediaEl.ended){
+            disp.wasPaused = false;
             attemptPlay(disp.currentMediaEl);
-		}
-	}
+        }
+    }
 }
 
 function applyCameraBlur(blurSide) { // helper function used in poll()
@@ -420,7 +447,7 @@ async function poll() {
         // const hasMedia = st.querySelector('audio') || st.querySelector('video'); // audio or video currently playing?
         // const hasMedia = !!disp.currentMediaEl; // when poll checks this during countdown, allegedly this wasn't being updated properly...?
 
-        if(section.type==='audio-select' && disp.state.selection && !disp.currentMediaEl) {
+        if(section.type==='audio-select' && disp.state.selection && !disp.currentMediaEl && !disp.wasPaused) {
                 playSection(section);
         }
 
@@ -501,10 +528,10 @@ async function init(){
 	// always start paused
 	await postState({command:'pause'});
     setupSidebarControls();
+    setupDisplayMediaControls();
     disp.playlist = await fetchJSON('/api/playlist');
 	await poll();
     renderSidebarSections();
-	// addInteractionOverlay();
     setupSessionModal();
 	setInterval(poll,1000); // check every 1000 ms
 }
@@ -512,8 +539,9 @@ async function init(){
 function setupSidebarControls() {
     const toggleBtn = qs('#menu-toggle');
     const sidebar = qs('#control-sidebar');
+    const bottomControls = qs('#sidebar-bottom-controls');
     
-    toggleBtn.addEventListener('click', (e) => {
+    toggleBtn?.addEventListener('click', (e) => { // ? checks for existence 
         e.stopPropagation();
         sidebarOpen = !sidebarOpen;
         if (sidebarOpen) {
@@ -525,12 +553,62 @@ function setupSidebarControls() {
         }
     });
 
+    bottomControls?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    sidebar?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
     // close the drawer if a user taps anywhere out on the main stage
-    qs('#stage').addEventListener('click', () => {
+    qs('#stage')?.addEventListener('click', () => {
         if (sidebarOpen) {
             sidebarOpen = false;
             sidebar.classList.remove('open');
             toggleBtn.textContent = '☰';
+        }
+    });
+}
+
+function setupDisplayMediaControls() {
+    const playPauseBtn = qs('#disp-btn-play-pause');
+    const muteBtn = qs('#disp-btn-mute');
+    const volumeSlider = qs('#disp-volume-slider');
+
+    playPauseBtn?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!disp.state) return;
+        if (disp.state.paused) {
+            await postState({ command: 'play' });
+        } else {
+            await postState({ command: 'pause' });
+        }
+    });
+
+    muteBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isMuted = !isMuted;
+        if (disp.currentMediaEl) {
+            disp.currentMediaEl.muted = isMuted;
+        }
+        muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+        muteBtn.style.background = isMuted ? '#bf616a' : '#4c566a';
+    });
+
+    volumeSlider?.addEventListener('input', (e) => {
+        e.stopPropagation();
+        currentVolume = parseFloat(e.target.value);
+        if (disp.currentMediaEl) {
+            disp.currentMediaEl.volume = currentVolume;
+            if (currentVolume === 0) {
+                disp.currentMediaEl.muted = true;
+                if (muteBtn) muteBtn.textContent = 'Unmute';
+            } else if (isMuted) {
+                isMuted = false;
+                disp.currentMediaEl.muted = false;
+                if (muteBtn) muteBtn.textContent = 'Mute';
+            }
         }
     });
 }
@@ -552,8 +630,10 @@ function renderSidebarSections() {
         
         li.addEventListener('click', async () => {
             await postState({ index: i, command: 'play' });
-            // close panel after selecting an index to clear the screen area ?
-            document.getElementById('menu-toggle').click();
+            sidebarOpen = false;
+            qs('#control-sidebar')?.classList.remove('open');
+            const toggleBtn = qs('#menu-toggle');
+            if (toggleBtn) toggleBtn.textContent = '☰';
         });
         
         list.appendChild(li);
