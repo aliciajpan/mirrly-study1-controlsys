@@ -1,4 +1,0 @@
-timestamp,PID,round,attempt_num,user_answer,is_correct,is_timeout,reaction_time_s,attempt_result
-2026-09-10T21:41:22.078665,P_DEFAULT,1,1,TIMEOUT,False,True,10.96,RETRY
-2026-09-10T21:41:31.333844,P_DEFAULT,1,2,RS,False,False,9.25,RETRY
-2026-09-10T21:41:45.355648,P_DEFAULT,1,3,TIMEOUT,False,True,14.02,FAIL
