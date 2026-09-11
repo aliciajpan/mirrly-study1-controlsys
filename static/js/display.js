@@ -92,7 +92,7 @@ function attachEndedAdvance(el, section) {
     if (section.type==='audio-select' && !disp.state.selection) return; 
 
     // audio ending on countdown is not adv condition!! only if user answers OR timer runs out!!
-    if (section.id && section.id.includes('countdown')) {
+    if (section.id?.includes('countdown')) {
         console.log("Audio track completed on a countdown screen. Ignoring auto-advance to protect timer.");
         return;
     }
@@ -212,7 +212,7 @@ function playSection(section){
 		disp.currentMediaEl=a;
 		attachEndedAdvance(a,section);
 
-        if (section.id.includes('countdown')) {
+        if (section.id?.includes('countdown')) {
 			startCountdownBar(countdownDuration);  
 
             // clear the stage
@@ -268,10 +268,27 @@ function playSection(section){
             });
 		}
 
-        if (section.id.includes('answer')) {  
+        if (section.id?.includes('answer')) {  
             const nextBtn = document.createElement('button');
             nextBtn.className = 'nav-next-btn';
             nextBtn.innerHTML = 'Next Round ➔';
+
+            Object.assign(nextBtn.style, {
+                position: 'fixed',
+                bottom: '40px',
+                right: '40px',
+                zIndex: '1000000',
+                padding: '14px 28px',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                color: '#11111b',
+                background: '#a6e3a1',
+                border: 'none',
+                borderRadius: '30px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+                transition: 'transform 0.15s ease, background 0.15s ease'
+            });
             
             nextBtn.addEventListener('click', () => {
                 nextBtn.remove();
