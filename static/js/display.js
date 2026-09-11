@@ -301,15 +301,41 @@ function playSection(section){
 
         container.innerHTML = `
             <div style="flex: 1; height: 100%; position: relative; overflow: hidden; border-right: 2px solid #333;">
-                <img id="cam-left-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/left" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s;" />
-                <span style="position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem;">Left Eye</span>
+                <img id="cam-left-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/left" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease-in-out;" />
+                <span style="position: absolute; top: 20px; left: 24px; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: 600; pointer-events: none;">Left Eye (Mirrly's POV)</span>
             </div>
             <div style="flex: 1; height: 100%; position: relative; overflow: hidden;">
-                <img id="cam-right-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/right" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s;" />
-                <span style="position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem;">Right Eye</span>
+                <img id="cam-right-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/right" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease-in-out;" />
+                <span style="position: absolute; top: 20px; right: 24px; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: 600; pointer-events: none;">Right Eye (Mirrly's POV)</span>
+            </div>
+
+            <!-- Floating On-Screen Blur Controls -->
+            <div id="display-blur-pill" style="
+                position: absolute;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 12px;
+                background: rgba(15, 15, 23, 0.85);
+                backdrop-filter: blur(8px);
+                padding: 10px 18px;
+                border-radius: 30px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+                z-index: 100;
+            ">
+                <button id="disp-blur-none" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #3b4252; color: #fff; font-weight: 600;">Clear Blur</button>
+                <button id="disp-blur-left" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Left Eye</button>
+                <button id="disp-blur-right" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Right Eye</button>
             </div>
         `;
+
         st.appendChild(container);
+
+        qs('#disp-blur-none').addEventListener('click', () => postState({ blur_side: 'none' }));
+        qs('#disp-blur-left').addEventListener('click', () => postState({ blur_side: 'left' }));
+        qs('#disp-blur-right').addEventListener('click', () => postState({ blur_side: 'right' }));
 
         // apply whatever blur mode is stored in global state
         applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
@@ -356,10 +382,23 @@ function applyCameraBlur(blurSide) { // helper function used in poll()
     leftCam.style.filter = 'none';
     rightCam.style.filter = 'none';
 
+    const BLUR = 'blur(32px) contrast(0.9) brightness(0.9)';
+
     if (blurSide === 'left' || blurSide === 'LS') {
-        leftCam.style.filter = 'blur(12px)';
+        leftCam.style.filter = BLUR;
     } else if (blurSide === 'right' || blurSide === 'RS') {
-        rightCam.style.filter = 'blur(12px)';
+        rightCam.style.filter = BLUR;
+    }
+
+    // highlight which blur button applied
+    const btnNone = qs('#disp-blur-none');
+    const btnLeft = qs('#disp-blur-left');
+    const btnRight = qs('#disp-blur-right');
+
+    if (btnNone && btnLeft && btnRight) {
+        btnNone.style.background = blurSide === 'none' ? '#a3be8c' : '#3b4252';
+        btnLeft.style.background = (blurSide === 'left' || blurSide === 'LS') ? '#bf616a' : '#5e81ac';
+        btnRight.style.background = (blurSide === 'right' || blurSide === 'RS') ? '#bf616a' : '#5e81ac';
     }
 }
 
