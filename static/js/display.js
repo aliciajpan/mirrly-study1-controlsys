@@ -14,6 +14,7 @@ let userInteracted = false;
 let sidebarOpen = false;
 let countdownInterval = null;
 let countdownDuration = 10;
+let attemptStartTime = null; // get rxn time tracker directly from countdown bar to sync in logs
 
 const disp = { // global display tracker
     playlist: null,
@@ -119,6 +120,9 @@ function attemptPlay(element) {
 // helper function for playSection, handles retry logic
 async function handleAnswerSubmission(chosenSide) {
     clearInterval(countdownInterval);
+
+    const reactionTime = attemptStartTime ? (Date.now() - attemptStartTime) / 1000 : 0.0;
+    attemptStartTime = null; // reset   
     
     const tapOverlay = document.getElementById('dynamic-tap-overlay');
     if (tapOverlay) tapOverlay.remove();
@@ -127,7 +131,10 @@ async function handleAnswerSubmission(chosenSide) {
         const response = await fetch('/api/submit_answer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ side: chosenSide })
+            body: JSON.stringify({ 
+                side: chosenSide,
+                reaction_time_s: parseFloat(reactionTime.toPrecision(4))
+            })
         });
         
         const data = await response.json();
@@ -326,12 +333,6 @@ async function poll() {
                 playSection(section);
             } 
         }
-
-        // else if (section.id.includes('countdown') && !hasMedia) {
-        //     console.log("Poll loop recovery: Forcing initialization of frozen countdown step"); // debugging
-        //     playSection(section);
-        // }
-        // ^ shouldn't be using presence of media to determine if countdown is valid...? time of audio vs countdown bar length...
     } 
     
     applyPauseState();
@@ -356,10 +357,6 @@ function addInteractionOverlay() {
     ov.addEventListener('click', async () => {
         userInteracted = true;
         ov.remove();
-
-        // if(!document.fullscreenElement) {
-        //     document.documentElement.requestFullscreen().catch(()=>{});
-        // } 
         
         await postState({command: 'play'});
 
@@ -450,6 +447,7 @@ function updateRobotStatusDisplay() {
 
 function startCountdownBar(sec) {
     clearInterval(countdownInterval);
+    attemptStartTime = Date.now()
     
     const container = qs('#timer-bar-container');
     const bar = qs('#timer-bar');

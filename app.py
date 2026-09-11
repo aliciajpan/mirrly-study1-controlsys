@@ -41,7 +41,7 @@ STATE: Dict[str, Any] = {
     "curr_round": 1, # ?
     "curr_attempts": 0,
     "max_attempts": 3,
-    "round_start_time": 0.0
+    "round_start_time": 0.0000
 }
 
 # Initialize robot WebSocket client
@@ -264,15 +264,17 @@ def api_state():
 def submit_answer():
     global STATE
     data = request.get_json(force=True) if request.data else {} # force ignores mimetype
-    answer_side = data.get('side') # "LS" or "RS"
+    answer_side = data.get('side') # "LS" or "RS" or "TIMEOUT"
     is_timeout = (answer_side == "TIMEOUT")
+
+    time_elapsed = data.get("reaction_time_s", 0.0000)
 
     now = time.time()
     start_time = STATE.get("attempt_start_time", now)
     if (start_time > 0):
-        time_elapsed = round(now-start_time, 2)
+        time_elapsed = round(now-start_time, 4)
     else:
-        time_elapsed = 0.0
+        time_elapsed = 0.0000
     
     # find where currently in playlist
     playlist = load_playlist()
