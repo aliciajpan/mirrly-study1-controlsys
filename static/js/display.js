@@ -343,30 +343,51 @@ async function poll() {
     updateRobotStatusDisplay();
 }
 
-function addInteractionOverlay() {
-    const st=qs('#stage');
-    const ov=document.createElement('div');
-    ov.id='interactionOverlay';
-    ov.style.position='fixed';
-    ov.style.inset='0';
-    ov.style.display='flex';
-    ov.style.alignItems='center';
-    ov.style.justifyContent='center';
-    ov.style.background='rgba(0,0,0,0.85)';
-    ov.style.color='#fff';
-    ov.style.fontSize='2.5rem';
-    ov.style.fontFamily='system-ui';
-    ov.style.cursor='pointer';
-    ov.textContent='Click to Start';
-    ov.addEventListener('click', async () => {
-        userInteracted = true;
-        ov.remove();
-        
-        await postState({command: 'play'});
+function setupSessionModal() {
+    const modal = qs('#session-modal-overlay');
+    const input = qs('#modalPidInput');
+    const startBtn = qs('#btnModalStart');
+    const randBtn = qs('#btnModalRandom');
 
+    if (!modal || !input || !startBtn) return;
+
+    if (randBtn) {
+        randBtn.addEventListener('click', () => {
+            input.value = `P-${Math.floor(1000 + Math.random() * 9000)}`;
+            input.focus();
+        });
+    }
+
+    async function commitAndStart() {
+        const pid = input.value.trim() || `P-${Math.floor(1000 + Math.random() * 9000)}`;
+        
+        // send ID to flask backend
+        try {
+            await fetch('/api/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ PID: pid })
+            });
+        } catch (e) {
+            console.error("Failed to set session ID:", e);
+        }
+
+        // unblock audio + start playback
+        userInteracted = true;
+        modal.remove();
+
+        await postState({ command: 'play' });
         attemptPlay(disp.currentMediaEl);
+    }
+
+    startBtn.addEventListener('click', commitAndStart);
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // commitAndStart(); // MUST press on-screen button to proceed, not ENTER (less risky to accidentally start)
+        }
     });
-    st.appendChild(ov);
 }
 
 async function init(){
@@ -376,7 +397,8 @@ async function init(){
     disp.playlist = await fetchJSON('/api/playlist');
 	await poll();
     renderSidebarSections();
-	addInteractionOverlay();
+	// addInteractionOverlay();
+    setupSessionModal();
 	setInterval(poll,1000); // check every 1000 ms
 }
 
