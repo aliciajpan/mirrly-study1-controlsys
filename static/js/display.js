@@ -121,7 +121,14 @@ function attemptPlay(element) {
 async function handleAnswerSubmission(chosenSide) {
     clearInterval(countdownInterval);
 
-    const reactionTime = attemptStartTime ? (Date.now() - attemptStartTime) / 1000 : 0.0;
+    // --- Floating Debug Timer ---
+    // hide when answer tapped
+    const debugTimerEl = qs('#debug-reaction-timer');
+    if (debugTimerEl) debugTimerEl.style.display = 'none';
+    // ----------------------------
+
+    const reactionTime = attemptStartTime ? (Date.now() - attemptStartTime) / 1000 : 0.0000;
+    
     attemptStartTime = null; // reset   
     
     const tapOverlay = document.getElementById('dynamic-tap-overlay');
@@ -447,7 +454,7 @@ function updateRobotStatusDisplay() {
 
 function startCountdownBar(sec) {
     clearInterval(countdownInterval);
-    attemptStartTime = Date.now()
+    attemptStartTime = Date.now();
     
     const container = qs('#timer-bar-container');
     const bar = qs('#timer-bar');
@@ -456,6 +463,30 @@ function startCountdownBar(sec) {
 
     container.style.display = 'block';
     bar.style.width = '100%';
+
+    // --- Floating Debug Timer ---
+    let debugTimerEl = qs('#debug-reaction-timer');
+    if (!debugTimerEl) {
+        debugTimerEl = document.createElement('div');
+        debugTimerEl.id = 'debug-reaction-timer';
+        Object.assign(debugTimerEl.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: 'rgba(0, 0, 0, 0.75)',
+            color: '#4ade80',
+            fontFamily: 'monospace',
+            fontSize: '1.5rem',
+            padding: '8px 14px',
+            borderRadius: '8px',
+            zIndex: '10000000',
+            pointerEvents: 'none'
+        });
+        document.body.appendChild(debugTimerEl);
+    }
+    debugTimerEl.style.display = 'block';
+    debugTimerEl.textContent = '0.0000 s';
+    // ----------------------------
     
     const totalMs = sec * 1000;
     let elapsedMs = 0;
@@ -463,6 +494,16 @@ function startCountdownBar(sec) {
     
     countdownInterval = setInterval(() => {
         elapsedMs += updateRateMs;
+
+        // --- Floating Debug Timer ---
+        const currentSeconds = (Date.now() - attemptStartTime) / 1000;
+        
+        // update live reaction time display
+        if (debugTimerEl) {
+            debugTimerEl.textContent = `${currentSeconds.toPrecision(4)} s`;
+        }
+        // ----------------------------
+
         const percentageLeft = Math.max(0, 100 - (elapsedMs / totalMs) * 100);
         
         bar.style.width = `${percentageLeft}%`;

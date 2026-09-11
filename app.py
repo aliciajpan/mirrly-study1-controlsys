@@ -154,7 +154,7 @@ def log_round_event(event_data: dict):
         writer = csv.DictWriter(file, fieldnames=colnTitles)
         if not file_exists:
             writer.writeheader()
-        writer.writerow(event_data)
+        writer.writerow(event_data) # saves to log file here for each submit
 
 @app.route("/")
 def controller():
@@ -267,14 +267,7 @@ def submit_answer():
     answer_side = data.get('side') # "LS" or "RS" or "TIMEOUT"
     is_timeout = (answer_side == "TIMEOUT")
 
-    time_elapsed = data.get("reaction_time_s", 0.0000)
-
-    now = time.time()
-    start_time = STATE.get("attempt_start_time", now)
-    if (start_time > 0):
-        time_elapsed = round(now-start_time, 4)
-    else:
-        time_elapsed = 0.0000
+    time_elapsed = float(data.get("reaction_time_s", 0.0000))
     
     # find where currently in playlist
     playlist = load_playlist()
