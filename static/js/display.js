@@ -116,6 +116,41 @@ function attemptPlay(element) {
     });
 }
 
+// helper function for playSection, handles retry logic
+async function handleAnswerSubmission(chosenSide) {
+    clearInterval(countdownInterval);
+    
+    const tapOverlay = document.getElementById('dynamic-tap-overlay');
+    if (tapOverlay) tapOverlay.remove();
+
+    try {
+        const response = await fetch('/api/submit_answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ side: chosenSide })
+        });
+        
+        const data = await response.json();
+
+        // if the answer wrong and tries remain, play retry audio
+        if (data.action === 'retry' && data.selection && data.selection.src) {
+            const retryAudio = new Audio(`/static/${data.selection.src}`);
+            disp.currentMediaEl = retryAudio;
+            
+            retryAudio.play().catch(err => console.warn("Playback blocked:", err));
+
+            // once Mirrly done speaking, restart round attempt
+            retryAudio.addEventListener('ended', () => {
+                const currentSec = disp.playlist.sections[disp.state.index];
+                playSection(currentSec);
+            });
+        }
+        // if data.action === 'advance', poll() will detect the new index and advance on its own
+    } catch (err) {
+        console.error("Error submitting answer:", err);
+    }
+}
+
 function playSection(section){
     clearInterval(countdownInterval);
     if (qs('#timer-bar-container')) qs('#timer-bar-container').style.display = 'none';
@@ -195,14 +230,7 @@ function playSection(section){
                 e.stopPropagation();
                 console.log("User answer input detected: LEFT SIDE (LS)");
 
-                clearInterval(countdownInterval);
-                tapOverlay.remove(); // prevent double clicks
-                
-                await fetch('/api/submit_answer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({side: "LS"})
-                });
+                handleAnswerSubmission("LS");
             });
 
             document.getElementById('right-touch-zone').addEventListener('click', async (e) => {
@@ -210,91 +238,8 @@ function playSection(section){
                 e.stopPropagation();
                 console.log("User answer input detected: RIGHT SIDE (RS)");
 
-                clearInterval(countdownInterval);
-                tapOverlay.remove();
-                
-                await fetch('/api/submit_answer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({side: "RS"})
-                });
+                handleAnswerSubmission("RS");
             });
-
-            // // invisible hitboxes for user to tap an ans for game
-            // const overlay = qs('#ui-overlay');
-            // overlay.style.position = 'fixed';
-            // overlay.style.top = '0';
-            // overlay.style.left = '0';
-            // overlay.style.right = '0';
-            // overlay.style.bottom = '0';
-            // overlay.style.zIndex = '99999';
-            // overlay.style.pointerEvents = 'auto';
-            // overlay.style.margin = '0';
-            // overlay.style.padding = '0';
-
-            // overlay.innerHTML = `
-            //     <div style="position: relative !important; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;">
-            //         <!-- Left Zone: Hardcoded to the left half -->
-            //         <div id="left-touch-zone" style="
-            //             position: absolute !important;
-            //             top: 0 !important;
-            //             left: 0 !important;
-            //             width: 50% !important;
-            //             height: 100% !important;
-            //             cursor: pointer;
-            //             background: rgba(255, 0, 0, 0.4) !important;
-            //             border: 5px solid red !important;
-            //             box-sizing: border-box !important;
-            //             z-index: 100000 !important;
-            //         "></div>
-                    
-            //         <!-- Right Zone: Hardcoded to the right half -->
-            //         <div id="right-touch-zone" style="
-            //             position: absolute !important;
-            //             top: 0 !important;
-            //             right: 0 !important;
-            //             width: 50% !important;
-            //             height: 100% !important;
-            //             cursor: pointer;
-            //             background: rgba(0, 0, 255, 0.4) !important;
-            //             border: 5px solid blue !important;
-            //             box-sizing: border-box !important;
-            //             z-index: 100000 !important;
-            //         "></div>
-            //     </div>
-            // `;
-
-            // qs('#left-touch-zone').addEventListener('click', async (e) => {
-            //     e.preventDefault(); // use in event listener to stop browser default behaviour
-            //     e.stopPropagation(); // stop event from going up DOM tree
-            //     console.log("User answer input detected: LEFT SIDE (LS)");
-
-            //     clearInterval(countdownInterval); // stop countdown bar
-            //     overlay.style.pointerEvents = 'none'; // prevent multi-click
-            //     overlay.innerHTML = ''; // clear hitboxes to prevent double taps
-                
-            //     await fetch('/api/submit_answer', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({side: "LS"})
-            //     });
-            // });
-
-            // qs('#right-touch-zone').addEventListener('click', async (e) => {
-            //     e.preventDefault(); // use in event listener to stop browser default behaviour
-            //     e.stopPropagation(); // stop event from going up DOM tree
-            //     console.log("User answer input detected: RIGHT SIDE (RS)");
-
-            //     clearInterval(countdownInterval); // stop countdown bar
-            //     overlay.style.pointerEvents = 'none'; // prevent multi-click
-            //     overlay.innerHTML = ''; // clear hitboxes to prevent double taps
-                
-            //     await fetch('/api/submit_answer', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({side: "RS"})
-            //     });
-            // });
 		}
 
         if (section.id.includes('answer')) {  
@@ -525,17 +470,8 @@ function startCountdownBar(sec) {
         bar.style.width = `${percentageLeft}%`;
         
         if (elapsedMs >= totalMs) {
-            clearInterval(countdownInterval);
             container.style.display = 'none'; // hide bar when round ends
-
-            // once timer runs out, disable LS/RS hitboxes
-            const tapOverlay = document.getElementById('dynamic-tap-overlay');
-            if (tapOverlay) {
-                tapOverlay.remove();
-            }
-
-            // automatically push step forward once the countdown runs out ?? ** maybe change this mechanism
-            postState({command: 'next'});
+            handleAnswerSubmission("TIMEOUT");
         }
     }, updateRateMs);
 }

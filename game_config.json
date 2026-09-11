@@ -24,7 +24,7 @@
     "wrong_again": [
       {"src": "media/audio/response/_stillConfused.mov"}
     ],
-    "timeout": [
+    "timeout_wrong": [
       {"src": "media/audio/response/_dwTimeUp.mp3"},
       {"src": "media/audio/response/_timeUpCanExplain.mp3"}
     ]

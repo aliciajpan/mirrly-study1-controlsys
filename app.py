@@ -2,23 +2,22 @@ import os
 import json
 import logging
 import random
-from typing import List, Dict, Any, Optional
-from flask import Flask, render_template, send_from_directory, jsonify, request
-from dotenv import load_dotenv
-
-import config
-
 import csv
 import datetime
 import time
 
+from typing import Dict, Any, Optional
+from flask import Flask, render_template, send_from_directory, jsonify, request
+from dotenv import load_dotenv
+
+import config
 from robot_client import RobotWebSocketClient
 from gesture_mapping import GestureMapper
 
 # Load environment variables from .env file
 load_dotenv()
 
-APP_TITLE = "Mirrly HRI Study"
+APP_TITLE = "Mirrly Clinical Study"
 MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "static", "media")
 PLAYLIST_PATH = os.path.join(os.path.dirname(__file__), "playlist.json")
 GAMECONFIG_PATH = os.path.join(os.path.dirname(__file__), "game_config.json")
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Shared runtime state for display page
+# Shared runtime state
 STATE: Dict[str, Any] = {
     "index": 0,
     "paused": False,
@@ -38,8 +37,8 @@ STATE: Dict[str, Any] = {
     "robot_status": "disconnected",
     "robot_message": None,
     "game_history": [],
-    "PID": "P_DEFAULT", # for session logs
-    "curr_round": 1,
+    "PID": "P_DEFAULT", # for session user logs
+    "curr_round": 1, # ?
     "curr_attempts": 0,
     "max_attempts": 3,
     "round_start_time": 0.0
@@ -58,7 +57,6 @@ ROBOT_WS_DEBUG = config.ROBOT_WS_DEBUG
 robot_client: Optional[RobotWebSocketClient] = None
 
 def init_robot_client():
-    """Initialize and start the robot WebSocket client."""
     global robot_client
     if ROBOT_WS_ENABLED and not robot_client:
         robot_client = RobotWebSocketClient(ROBOT_WS_URL, debug=ROBOT_WS_DEBUG)
@@ -66,7 +64,6 @@ def init_robot_client():
         robot_client.start()
 
 def on_robot_status(status: str, data: Dict[str, Any]):
-    """Callback for robot status updates."""
     # Map internal status to UI-friendly status
     if status == "connected":
         STATE["robot_status"] = "connected"
@@ -110,10 +107,54 @@ def load_gameconfig() -> Dict[str, Any]:
                 "round3": "LS",
                 "round4": "LS",
                 "round5": "RS"
+            },
+            "response_buckets": {
+                "correct": [], 
+                "correct_again": [], 
+                "correct_after_wrong": [], 
+                "wrong": [], 
+                "wrong_again": [],
+                "timeout_wrong": []
             }
         }
     with open(GAMECONFIG_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
+    try:
+        # First stop any currently running gesture
+        if robot_client:
+            robot_client.send_command('stop')
+            logger.info("Sent stop command before starting new gesture")
+        
+        # Then start the new gesture
+        section = playlist["sections"][new_index]
+        gesture = GestureMapper.get_gesture(section)
+
+        if gesture and robot_client:
+            metadata = GestureMapper.get_metadata(section)
+            robot_client.send_gesture(gesture, metadata)
+            logger.info(f"Gesture triggered: {gesture} for section {section.get('id')}")
+
+    except Exception as e:
+        logger.error(f"Error triggering robot gesture: {e}")
+
+def log_round_event(event_data: dict):
+    pid = STATE.get("PID", "anonymous")
+    filepath = os.path.join(SESSIONLOG_DIR, f"{pid}_session_log.csv")
+    file_exists = os.path.exists(filepath)
+
+    colnTitles = [
+        "timestamp", "PID", "round", "attempt_num", 
+        "user_answer", "is_correct", "is_timeout", "reaction_time_s", "attempt_result"
+    ]
+
+    # open file in "a"ppend mode, no blank row
+    with open(filepath, "a", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=colnTitles)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(event_data)
 
 @app.route("/")
 def controller():
@@ -134,30 +175,11 @@ def api_playlist():
 def media(filename):
     return send_from_directory(MEDIA_ROOT, filename)
 
-def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
-    """Trigger robot gesture for the new section."""
-    try:
-        # First stop any currently running gesture
-        if robot_client:
-            robot_client.send_command('stop')
-            logger.info("Sent stop command before starting new gesture")
-        
-        # Then start the new gesture
-        section = playlist["sections"][new_index]
-        gesture = GestureMapper.get_gesture(section)
-        if gesture and robot_client:
-            metadata = GestureMapper.get_metadata(section)
-            robot_client.send_gesture(gesture, metadata)
-            logger.info(f"Gesture triggered: {gesture} for section {section.get('id')}")
-    except Exception as e:
-        logger.error(f"Error triggering robot gesture: {e}")
-
 @app.route('/api/state', methods=['GET', 'POST'])
 def api_state():
     playlist = load_playlist()
     if request.method == 'POST':
         data = request.get_json(force=True) if request.data else {}
-
         gesture_just_triggered = False
 
         # Update index
@@ -167,6 +189,10 @@ def api_state():
             if idx != STATE['index']:
                 STATE['index'] = idx
                 STATE['selection'] = None  # reset selection when changing section
+
+                # Mark timer when entering countdown
+                if 'countdown' in playlist['sections'][idx].get('id', ''):
+                    STATE['attempt_start_time'] = time.time()
                 _apply_robot_gesture(idx, playlist)
                 gesture_just_triggered = True
 
@@ -197,6 +223,8 @@ def api_state():
             if new_i != STATE['index']:
                 STATE['index'] = new_i
                 STATE['selection'] = None
+                if 'countdown' in playlist['sections'][new_i].get('id', ''):
+                    STATE['attempt_start_time'] = time.time()
                 _apply_robot_gesture(new_i, playlist)
                 
         elif cmd == 'prev':
@@ -240,7 +268,11 @@ def submit_answer():
     is_timeout = (answer_side == "TIMEOUT")
 
     now = time.time()
-    time_elapsed = round(now - STATE.get("round_start_timestamp", now), 2)
+    start_time = STATE.get("attempt_start_time", now)
+    if (start_time > 0):
+        time_elapsed = round(now-start_time, 2)
+    else:
+        time_elapsed = 0.0
     
     # find where currently in playlist
     playlist = load_playlist()
@@ -258,7 +290,6 @@ def submit_answer():
     if not game_round:
         return jsonify({"error": "Didn't identify a numbered game round"}), 400
     
-    ##### try:
     config_data = load_gameconfig()
     round_key = f"round{game_round}"
     correct_answer = config_data.get("answer_key", {}).get(round_key)
@@ -269,24 +300,30 @@ def submit_answer():
 
     # checking if should end round
     round_ended = is_correct or (attempts >= STATE["max_attempts"])
+    attempt_result = "PASS" if is_correct else ("FAIL" if round_ended else "RETRY")
 
     log_round_event({
         "timestamp": datetime.datetime.now().isoformat(),
-        "PID": STATE["participant_id"],
+        "PID": STATE["PID"],
         "round": game_round,
         "attempt_num": attempts,
         "user_answer": answer_side,
         "is_correct": is_correct,
         "is_timeout": is_timeout,
         "reaction_time_s": time_elapsed,
-        "final_result": "PASS" if is_correct else ("FAIL" if round_ended else "RETRY")
+        "attempt_result": attempt_result
     })
 
+    # RETRYING
     if not round_ended:
-        # TODO: TTS MEDIA
-        # retry_tts = "media/audio/response/_timeout_retry.mp3" if is_timeout else "media/audio/response/_wrong_try_again.mp3"
+        if is_timeout:
+            retry_tts = "media/audio/response/_timeRanAnotherTry.mp3"
+        else:
+            retry_tts = "media/audio/response/_notRightTryAgain.mp3"
         
         STATE["selection"] = {"src": retry_tts, "label": "retry"}
+        STATE["attempt_start_time"] = time.time()  # reset clock for next attempt
+
         return jsonify({
             "action": "retry",
             "attempts": attempts,
@@ -294,95 +331,52 @@ def submit_answer():
             "selection": STATE["selection"]
         })
 
+    # ROUND ENDS (solved or strike out)
     STATE["curr_attempts"] = 0
-    STATE["game_history"].append(1 if is_correct else 0)
-
-    ########## from here, reconciliate OLD VERSION #############
-    ## NEW PROPOSAL ##
-    # # Reset attempts for next round
-    # STATE["current_attempts"] = 0
-    # STATE["game_history"].append(1 if is_correct else 0)
-
-    # # Pick dynamic reaction audio
-    # buckets = config_data.get("response_buckets", {})
-    # if is_correct:
-    #     chosen_audio = random.choice(buckets.get("correct", [{"src": "media/audio/response/_expert.mov"}]))
-    # else:
-    #     chosen_audio = random.choice(buckets.get("wrong", [{"src": "media/audio/response/_confused.mp3"}]))
-
-    # dynamic_gesture = "show_LS" if correct_answer == "LS" else "show_RS"
-    # STATE["selection"] = {
-    #     "src": chosen_audio.get("src", ""),
-    #     "label": 1 if is_correct else 0,
-    #     "gesture": dynamic_gesture
-    # }
-
-    # # Advance to reaction / answer
-    # new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
-    # STATE['index'] = new_i
-
-    # return jsonify({
-    #     "action": "advance",
-    #     "index": STATE["index"],
-    #     "selection": STATE["selection"],
-    #     "robot_status": STATE["robot_status"]
-    # })
-
-   # except Exception:
-        # fallback dictionary matching load_gameconfig logic
-        #config_data = {
-           #"answer_key": {"round1": "LS", "round2": "RS", "round3": "LS", "round4": "LS", "round5": "RS"},
-            #"response_buckets": {"correct": [], "correct_again": [], "correct_after_wrong": [], "wrong": [], "wrong_again": []}
-        #}
-
-    # check correctness
-    round_key = f"round{game_round}"
-    correct_answer = config_data.get("answer_key", {}).get(round_key)
-    is_correct = (answer_side == correct_answer)
-    result_tag = 1 if is_correct else 0 # 1 means correct
-
     history = STATE.get("game_history", [])
     buckets = config_data.get("response_buckets", {})
-    chosen_audio = {"src": ""} # fallback audio structure
+    chosen_audio = {"src": ""}
 
     if is_correct:
+        # history shows correctness bools of past rounds
         if len(history) > 0 and history[-1] == 1 and buckets.get("correct_again"):
             chosen_audio = random.choice(buckets["correct_again"])
         elif len(history) > 0 and history[-1] == 0 and buckets.get("correct_after_wrong"):
             chosen_audio = random.choice(buckets["correct_after_wrong"])
         elif buckets.get("correct"):
             chosen_audio = random.choice(buckets["correct"])
+        else:
+            chosen_audio = {"src": "media/audio/response/_expert.mov"}
     else:
-        if len(history) > 0 and history[-1] == 0 and buckets.get("wrong_again"):
+        if is_timeout and buckets.get("timeout_wrong"):
+            chosen_audio = random.choice(buckets["timeout_wrong"])
+        elif len(history) > 0 and history[-1] == 0 and buckets.get("wrong_again"):
             chosen_audio = random.choice(buckets["wrong_again"])
         elif buckets.get("wrong"):
             chosen_audio = random.choice(buckets["wrong"])
-    # note possible case where history[idx] returns "" or None, so explicit check 1 or 0
+        else:
+            chosen_audio = {"src": "media/audio/response/_toughOne.mov"}
 
-    if correct_answer == "LS":
-        dynamic_gesture = "show_LS"
-    elif correct_answer == "RS":
-        dynamic_gesture = "show_RS"
-    else:
-        dynamic_gesture = None  # fallback
+    dynamic_gesture = "show_LS" if correct_answer == "LS" else "show_RS"
 
-    STATE["game_history"].append(result_tag)
+    STATE["game_history"].append(1 if is_correct else 0)
     STATE["selection"] = {
         "src": chosen_audio.get("src", ""),
-        "label": result_tag,
-        "gesture": dynamic_gesture  # sends 'show_LS' or 'show_RS' to robot repo
+        "label": 1 if is_correct else 0,
+        "gesture": dynamic_gesture
     }
 
-    if robot_client and dynamic_gesture: # if websocket live/connected
+    if robot_client and dynamic_gesture:
         robot_client.send_command('stop')
         metadata = {'section_id': section_id, 'round': game_round, 'type': 'automated_touch'}
         robot_client.send_gesture(dynamic_gesture, metadata)
 
-    # go to next section (without overshooting)
+    # EXPLAIN ANSWER
     new_i = min(len(playlist['sections']) - 1, STATE['index'] + 1)
     STATE['index'] = new_i
 
     return jsonify({
+        "action": "advance",
         'index': STATE['index'],
         'paused': STATE['paused'],
         'selection': STATE['selection'],
@@ -390,21 +384,6 @@ def submit_answer():
         'robot_status': STATE['robot_status'],
         'robot_message': STATE['robot_message'],
     })
-
-def log_round_event(event_data: dict):
-    pid = STATE.get("PID", "anonymous")
-    filepath = os.path.join(SESSIONLOG_DIR, f"{pid}_session_log.csv")
-    file_exists = os.path.exists(filepath)
-
-    # open file in "a"ppend mode, no blank row
-    with open(filepath, "a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=[
-            "Timestamp", "PID", "Round", "Attempt #", 
-            "User Ans", "Correct?", "Timed Out?", "Rxn Time (s)", "Final Result"
-        ])
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(event_data)
 
 @app.route('/api/session', methods=['POST'])
 def set_session():
