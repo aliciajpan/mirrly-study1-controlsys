@@ -346,20 +346,37 @@ async function poll() {
 function setupSessionModal() {
     const modal = qs('#session-modal-overlay');
     const input = qs('#modalPidInput');
+    const errorEl = qs('#modalPidError');
     const startBtn = qs('#btnModalStart');
     const randBtn = qs('#btnModalRandom');
 
     if (!modal || !input || !startBtn) return;
 
+    // clear error message when user types
+    input.addEventListener('input', () => {
+        if (errorEl) errorEl.style.display = 'none';
+        input.style.border = '1px solid #7c6fa6';
+    });
+
     if (randBtn) {
         randBtn.addEventListener('click', () => {
             input.value = `P-${Math.floor(1000 + Math.random() * 9000)}`;
+            if (errorEl) errorEl.style.display = 'none';
+            input.style.border = '1px solid #7c6fa6';
             input.focus();
         });
     }
 
     async function commitAndStart() {
-        const pid = input.value.trim() || `P-${Math.floor(1000 + Math.random() * 9000)}`;
+        const pid = input.value.trim();
+
+        // stop execution if empty + show error
+        if (!pid) {
+            if (errorEl) errorEl.style.display = 'block';
+            input.style.border = '2px solid #ef4444';
+            input.focus();
+            return;
+        }
         
         // send ID to flask backend
         try {

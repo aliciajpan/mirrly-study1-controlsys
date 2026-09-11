@@ -198,22 +198,32 @@
             <p style="margin: 0; color: #a89ad7; font-size: 0.95rem;">Enter Participant ID or click Random to begin:</p>
             
             <div style="display: flex; gap: 8px; width: 100%;">
-            <input type="text" id="modalPidInput" placeholder="e.g. P101" autofocus style="
-                flex: 1;
-                padding: 10px 14px;
-                font-size: 1.1rem;
-                border-radius: 6px;
-                border: 1px solid #7c6fa6;
-                background: #0f0d1b;
-                color: #fff;
-                outline: none;" />
-            <button id="btnModalRandom" type="button" style="
-                padding: 10px 14px;
-                background: #3b335a;
-                color: #fff;
-                border: 1px solid #7c6fa6;
-                border-radius: 6px;
-                cursor: pointer;">Random</button>
+                <input type="text" id="modalPidInput" placeholder="e.g. P101" autofocus style="
+                    flex: 1;
+                    padding: 10px 14px;
+                    font-size: 1.1rem;
+                    border-radius: 6px;
+                    border: 1px solid #7c6fa6;
+                    background: #0f0d1b;
+                    color: #fff;
+                    outline: none;" />
+                <button id="btnModalRandom" type="button" style="
+                    padding: 10px 14px;
+                    background: #3b335a;
+                    color: #fff;
+                    border: 1px solid #7c6fa6;
+                    border-radius: 6px;
+                    cursor: pointer;">Random</button>
+            </div>
+
+            <div id="modalPidError" style="
+                display: none;
+                color: #ef4444;
+                font-size: 0.85rem;
+                font-weight: bold;
+                margin-top: 6px;
+                text-align: left;">
+                Please enter Participant ID!
             </div>
 
             <button id="btnModalStart" type="button" style="
