@@ -238,10 +238,15 @@ function playSection(section){
                 boxSizing: 'border-box'
             });
 
-            // temp: coloured for visual position check !!
+            // temp: coloured for visual position check
+            // tapOverlay.innerHTML = `
+            //     <div id="left-touch-zone" style="flex: 1 !important; height: 100% !important; cursor: pointer; background: rgba(255, 0, 0, 0.4) !important; border: 5px solid red !important; box-sizing: border-box !important;"></div>
+            //     <div id="right-touch-zone" style="flex: 1 !important; height: 100% !important; cursor: pointer; background: rgba(0, 0, 255, 0.4) !important; border: 5px solid blue !important; box-sizing: border-box !important;"></div>
+            // `;
+
             tapOverlay.innerHTML = `
-                <div id="left-touch-zone" style="flex: 1 !important; height: 100% !important; cursor: pointer; background: rgba(255, 0, 0, 0.4) !important; border: 5px solid red !important; box-sizing: border-box !important;"></div>
-                <div id="right-touch-zone" style="flex: 1 !important; height: 100% !important; cursor: pointer; background: rgba(0, 0, 255, 0.4) !important; border: 5px solid blue !important; box-sizing: border-box !important;"></div>
+                <div id="left-touch-zone" style="flex: 1; height: 100%; cursor: pointer;"></div>
+                <div id="right-touch-zone" style="flex: 1; height: 100%; cursor: pointer;"></div>
             `;
 
             document.body.appendChild(tapOverlay);
