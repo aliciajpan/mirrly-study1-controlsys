@@ -307,12 +307,12 @@ function applyPauseState(){
 	} 
     
     else {
-		// only reset to beginning if transitioning from paused to playing (restart)
-		if(disp.wasPaused && disp.currentMediaEl.currentTime !== undefined){
-			disp.currentMediaEl.currentTime = 0;
+		// OLD: only reset to beginning if transitioning from paused to playing (restart)
+        // only resume if explicitly paused mid-playback + not ended yet
+		if(disp.wasPaused && disp.currentMediaEl.ended){
 			disp.wasPaused = false;
+            attemptPlay(disp.currentMediaEl);
 		}
-		attemptPlay(disp.currentMediaEl);
 	}
 }
 
@@ -329,16 +329,13 @@ async function poll() {
         playSection(disp.playlist.sections[disp.state.index]);
     } 
 
-    else { // same index
+    else { // same index, DO NOT LOOP playSection() here!!
         const section=disp.playlist.sections[disp.state.index];
-        const st = qs('#stage');
         // const hasMedia = st.querySelector('audio') || st.querySelector('video'); // audio or video currently playing?
-        const hasMedia = !!disp.currentMediaEl; // when poll checks this during countdown, allegedly this wasn't being updated properly...?
+        // const hasMedia = !!disp.currentMediaEl; // when poll checks this during countdown, allegedly this wasn't being updated properly...?
 
-        if(section.type==='audio-select' && disp.state.selection) { // mirrly supposed to say smth + rxn chosen
-            if (!hasMedia) {
+        if(section.type==='audio-select' && disp.state.selection && !disp.currentMediaEl) {
                 playSection(section);
-            } 
         }
     } 
     
