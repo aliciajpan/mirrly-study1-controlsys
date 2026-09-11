@@ -404,18 +404,19 @@ function playSection(section){
 function applyPauseState(){
 	const playPauseBtn = qs('#disp-btn-play-pause');
     if (playPauseBtn && disp.state) {
-        playPauseBtn.textContent = disp.state.paused ? '▶ Play' : '⏸ Pause';
+        playPauseBtn.textContent = disp.state.paused ? 'Play' : 'Pause';
         playPauseBtn.style.background = disp.state.paused ? '#a3be8c' : '#4c566a';
     }
 
     if(!disp.currentMediaEl) return;
+
     if(disp.state.paused) {
         if(typeof disp.currentMediaEl.pause==='function') disp.currentMediaEl.pause();
         disp.wasPaused = true;
     } 
     
     else {
-        if(disp.wasPaused && disp.currentMediaEl.ended){
+        if(disp.wasPaused && !disp.currentMediaEl.ended){
             disp.wasPaused = false;
             attemptPlay(disp.currentMediaEl);
         }
