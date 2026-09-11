@@ -6,6 +6,19 @@ const ctrlState={playlist:null,state:null,prevIndex:null,lastRenderedIndex:null}
 
 function qs(s){return document.querySelector(s);} 
 
+qs('#btn-blur-none')?.addEventListener('click', async () => {
+    await postJSON('/api/state', { blur_side: 'none' });
+    refreshState();
+});
+qs('#btn-blur-left')?.addEventListener('click', async () => {
+    await postJSON('/api/state', { blur_side: 'left' });
+    refreshState();
+});
+qs('#btn-blur-right')?.addEventListener('click', async () => {
+    await postJSON('/api/state', { blur_side: 'right' });
+    refreshState();
+});
+
 function renderSections(){
 	const list=qs('#sectionList');
 	list.innerHTML='';

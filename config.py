@@ -37,3 +37,5 @@ ENABLE_ROBOT_GESTURES = os.environ.get("ENABLE_ROBOT_GESTURES", "true").lower() 
 
 # Logging Configuration
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
+MIRRLY_CAM_IP = "192.168.0.110"

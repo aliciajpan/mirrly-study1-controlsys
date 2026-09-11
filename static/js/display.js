@@ -283,6 +283,37 @@ function playSection(section){
 			attachEndedAdvance(chosen,section);
 		}
 	} 
+
+    else if (section.type === 'dual-camera') {
+        const MIRRLY_CAM_IP = (disp.state && disp.state.robot_ip) ? disp.state.robot_ip : "192.168.0.110";
+
+        const container = document.createElement('div');
+        container.id = 'dual-camera-stage';
+        Object.assign(container.style, {
+            display: 'flex',
+            width: '100vw',
+            height: '100vh',
+            position: 'fixed',
+            inset: '0',
+            backgroundColor: '#000',
+            zIndex: '50'
+        });
+
+        container.innerHTML = `
+            <div style="flex: 1; height: 100%; position: relative; overflow: hidden; border-right: 2px solid #333;">
+                <img id="cam-left-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/left" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s;" />
+                <span style="position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem;">Left Eye</span>
+            </div>
+            <div style="flex: 1; height: 100%; position: relative; overflow: hidden;">
+                <img id="cam-right-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/right" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s;" />
+                <span style="position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem;">Right Eye</span>
+            </div>
+        `;
+        st.appendChild(container);
+
+        // apply whatever blur mode is stored in global state
+        applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
+    }
     
     else {
 		const p=document.createElement('p');
@@ -316,6 +347,22 @@ function applyPauseState(){
 	}
 }
 
+function applyCameraBlur(blurSide) { // helper function used in poll()
+    const leftCam = qs('#cam-left-feed');
+    const rightCam = qs('#cam-right-feed');
+    if (!leftCam || !rightCam) return;
+
+    // reset filters
+    leftCam.style.filter = 'none';
+    rightCam.style.filter = 'none';
+
+    if (blurSide === 'left' || blurSide === 'LS') {
+        leftCam.style.filter = 'blur(12px)';
+    } else if (blurSide === 'right' || blurSide === 'RS') {
+        rightCam.style.filter = 'blur(12px)';
+    }
+}
+
 async function poll() {
     disp.state=await fetchJSON('/api/state'); // get global state
 
@@ -336,6 +383,10 @@ async function poll() {
 
         if(section.type==='audio-select' && disp.state.selection && !disp.currentMediaEl) {
                 playSection(section);
+        }
+
+        if (disp.playlist && disp.playlist.sections[disp.state.index].type === 'dual-camera') {
+            applyCameraBlur(disp.state.blur_side);
         }
     } 
     

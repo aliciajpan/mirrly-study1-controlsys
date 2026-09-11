@@ -31,6 +31,9 @@
     { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "gesture": "game_tts_5_answer", "src": "media/image/Rd5New.jpg", "audio": "media/audio/round 5 answer.mov", "auto_advance": false },
 
     { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME OUTRO.mov", "auto_advance": false },
+
+    {"id": "amblyopia_sim", "type": "dual-camera", "title": "Vision Simulation", "auto_advance": false},
+    
     { "id": "s26_outro_tts", "type": "image+audio", "title": "Outro TTS", "gesture": "overall_outro", "src": "media/image/mirrly_goodbye.jpg", "audio": "media/audio/MirrlyOverallOutro.mp3"}
   ]
 }
