@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Robot WebSocket Configuration
-ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://127.0.0.1:8000")
+# ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://127.0.0.1:8000") # fallback when no .env
+ROBOT_WS_URL = os.environ.get("ROBOT_WS_URL", "ws://192.168.0.110:8000")
 ROBOT_WS_ENABLED = os.environ.get("ROBOT_WS_ENABLED", "true").lower() == "true"
 ROBOT_WS_DEBUG = os.environ.get("ROBOT_WS_DEBUG", "false").lower() == "true"
 
