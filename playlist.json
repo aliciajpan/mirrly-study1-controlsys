@@ -35,18 +35,21 @@
     {"id": "amblyopia_sim_1", 
     "type": "dual-camera", 
     "title": "Amblyopia Simulation Intro", 
+    "gesture": "sim_1_gesture",
     "audio": "media/audio/eyeSim/eyeSim1-patch_this_eye_NAME.mp4", 
     "auto_advance": true},
 
     {"id": "amblyopia_sim_2", 
     "type": "dual-camera", 
     "title": "Mirrly's Amblyopic Vision", 
+    "gesture": "sim_2_gesture",
     "audio": "media/audio/eyeSim/eyeSim2-mirrlys_eye.mp4", 
     "auto_advance": true},
 
     {"id": "amblyopia_sim_3", 
     "type": "dual-camera", 
     "title": "Patching Importance", 
+    "gesture": "sim_3_gesture",
     "audio": "media/audio/eyeSim/eyeSim3-patching_important.mp4", 
     "auto_advance": false},
     

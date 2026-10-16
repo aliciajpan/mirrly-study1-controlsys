@@ -15,6 +15,7 @@ class GestureMapper:
         "image": "center_all",
         "image+audio": "center_all",
         "audio-select": "", # No gesture for audio-select by default, add one if you are crazy enough
+        "dual-camera": "center_all"
     }
 
     @staticmethod
