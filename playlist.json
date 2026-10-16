@@ -32,8 +32,24 @@
 
     { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME OUTRO.mov", "auto_advance": false },
 
-    {"id": "amblyopia_sim", "type": "dual-camera", "title": "Vision Simulation", "auto_advance": false},
+    {"id": "amblyopia_sim_1", 
+    "type": "dual-camera", 
+    "title": "Vision Simulation Intro-Orientation", 
+    "audio": "media/audio/eyeSim/eyeSim1-patch_this_eye_NAME.mp4", 
+    "auto_advance": true},
+
+    {"id": "amblyopia_sim_2", 
+    "type": "dual-camera", 
+    "title": "Vision Simulation Mirrly Demo", 
+    "audio": "media/audio/eyeSim/eyeSim2-mirrlys_eye.mp4", 
+    "auto_advance": true},
+
+    {"id": "amblyopia_sim_3", 
+    "type": "dual-camera", 
+    "title": "Vision Simulation Patching Important", 
+    "audio": "media/audio/eyeSim/eyeSim3-patching_important.mp4", 
+    "auto_advance": false},
     
     { "id": "s26_outro_tts", "type": "image+audio", "title": "Outro TTS", "gesture": "overall_outro", "src": "media/image/mirrly_goodbye.jpg", "audio": "media/audio/MirrlyOverallOutro.mp3"}
-  ]
+]
 }

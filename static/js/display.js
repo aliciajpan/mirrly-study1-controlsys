@@ -86,7 +86,7 @@ function createElementForSource(src,kind) {
 function attachEndedAdvance(el, section) {
     if (!el) return; 
 
-    const advanceTypes=['video','audio','image+audio','audio-select']; 
+    const advanceTypes=['video','audio','image+audio','audio-select','dual-camera']; 
     if (!advanceTypes.includes(section.type)) return; 
 
     if (section.type==='audio-select' && !disp.state.selection) return; 
@@ -173,6 +173,7 @@ async function handleAnswerSubmission(chosenSide) {
 }
 
 function playSection(section){
+
     clearInterval(countdownInterval);
     if (qs('#timer-bar-container')) qs('#timer-bar-container').style.display = 'none';
     if (qs('#ui-overlay')) qs('#ui-overlay').innerHTML = '';
@@ -181,7 +182,13 @@ function playSection(section){
         oldBtn.remove();
     }
     
-    clearStage();
+    // only wipe stage if NOT in amb sim sections
+    const existingCam = qs('#dual-camera-stage');
+    if (section.type !== 'dual-camera' || !existingCam) {
+        clearStage();
+    }
+
+    // clearStage();
 	const st=qs('#stage');
 
 	if(section.type==='video') {
@@ -380,8 +387,54 @@ function playSection(section){
             postState({ blur_side: 'right' });
         });
 
+        // clean up previous amb sim section audio without redoing camera feeds
+        const oldAudio = qs('#dual-cam-audio');
+        if (oldAudio) {
+            oldAudio.remove();
+        } 
+
+        // attach the new section audio track
+        if (section.audio) {
+            const a = createElementForSource(section.audio, 'audio');
+            a.id = 'dual-cam-audio';
+            a.style.display = 'none';
+            st.appendChild(a);
+            disp.currentMediaEl = a;
+            attachEndedAdvance(a, section);
+        }
+
         // apply whatever blur mode is stored in global state
         applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
+
+        if (section.id && section.id.includes('sim_3')) {
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'nav-next-btn';
+            nextBtn.innerHTML = 'Next Section ➔';
+
+            Object.assign(nextBtn.style, {
+                position: 'fixed',
+                bottom: '30px',
+                right: '40px',
+                zIndex: '1000000',
+                padding: '12px 24px',
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+                color: '#11111b',
+                background: '#a6e3a1',
+                border: 'none',
+                borderRadius: '30px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+                transition: 'transform 0.15s ease, background 0.15s ease'
+            });
+
+            nextBtn.addEventListener('click', () => {
+                nextBtn.remove();
+                postState({ command: 'next' });
+            });
+
+            document.body.appendChild(nextBtn);
+        }
     }
     
     else {
