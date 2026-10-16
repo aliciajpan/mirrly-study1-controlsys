@@ -172,7 +172,53 @@ async function handleAnswerSubmission(chosenSide) {
     }
 }
 
-function playSection(section){
+function mountNextButton(section) {
+    if (qs('.nav-next-btn')) {
+        return; // don't duplicate if button already there
+    }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'nav-next-btn';
+
+    if (section.id?.includes('amblyopia_video') || section.id.includes('sim_3')) {
+            nextBtn.innerHTML = 'Next Section ➔';
+    } 
+    else if (section.id?.includes('game_intro')) {
+        nextBtn.innerHTML = 'Start Game ➔';
+    }
+    else if (section.id?.includes('_answer')) {
+        nextBtn.innerHTML = 'Next Round ➔';
+    }
+    else if (section.id?.includes('game_outro')) {
+        nextBtn.innerHTML = 'Finish Game ➔';
+    }
+
+    Object.assign(nextBtn.style, {
+            position: 'fixed',
+            bottom: '30px',
+            right: '40px',
+            zIndex: '1000000',
+            padding: '12px 24px',
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            color: '#11111b',
+            background: '#a6e3a1',
+            border: 'none',
+            borderRadius: '30px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+            transition: 'transform 0.15s ease, background 0.15s ease'
+    });
+
+    nextBtn.addEventListener('click', () => {
+            nextBtn.remove();
+            postState({ command: 'next' });
+        });
+
+    document.body.appendChild(nextBtn);
+}
+
+function playSection(section) {
 
     clearInterval(countdownInterval);
     if (qs('#timer-bar-container')) qs('#timer-bar-container').style.display = 'none';
@@ -274,36 +320,6 @@ function playSection(section){
                 handleAnswerSubmission("RS");
             });
 		}
-
-        if (section.id?.includes('answer')) {  
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'nav-next-btn';
-            nextBtn.innerHTML = 'Next Round ➔';
-
-            Object.assign(nextBtn.style, {
-                position: 'fixed',
-                bottom: '40px',
-                right: '40px',
-                zIndex: '1000000',
-                padding: '14px 28px',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                color: '#11111b',
-                background: '#a6e3a1',
-                border: 'none',
-                borderRadius: '30px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-                transition: 'transform 0.15s ease, background 0.15s ease'
-            });
-            
-            nextBtn.addEventListener('click', () => {
-                nextBtn.remove();
-                postState({ command: 'next' });
-            });
-            
-            document.body.appendChild(nextBtn);
-        }
 	} 
     
     else if(section.type==='audio-select') {
@@ -405,36 +421,6 @@ function playSection(section){
 
         // apply whatever blur mode is stored in global state
         applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
-
-        if (section.id && section.id.includes('sim_3')) {
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'nav-next-btn';
-            nextBtn.innerHTML = 'Next Section ➔';
-
-            Object.assign(nextBtn.style, {
-                position: 'fixed',
-                bottom: '30px',
-                right: '40px',
-                zIndex: '1000000',
-                padding: '12px 24px',
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                color: '#11111b',
-                background: '#a6e3a1',
-                border: 'none',
-                borderRadius: '30px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-                transition: 'transform 0.15s ease, background 0.15s ease'
-            });
-
-            nextBtn.addEventListener('click', () => {
-                nextBtn.remove();
-                postState({ command: 'next' });
-            });
-
-            document.body.appendChild(nextBtn);
-        }
     }
     
     else {
@@ -443,6 +429,31 @@ function playSection(section){
 		p.textContent=`Unknown section type ${section.type}`;
 		st.appendChild(p);
 	}
+
+    const needNextButton = section.id && (
+        section.id.includes('amblyopia_video') || 
+        section.id.includes('game_intro') || 
+        section.id.includes('_answer') ||
+        section.id.includes('game_outro') ||
+        section.id.includes('sim_3')
+    );
+
+    if (needNextButton) {
+        // if audio element is active, wait until TTS finishes before give Next button
+        if (disp.currentMediaEl && 
+            typeof disp.currentMediaEl.addEventListener === 'function' && // built-in JS typeof operator
+            !disp.currentMediaEl.ended) {
+            disp.currentMediaEl.addEventListener('ended', () => {
+                mountNextButton(section);
+            }, 
+            { once: true });
+        } 
+        
+        else {
+            // if no audio or already finished, give Next button immediately
+            mountNextButton(section);
+        }
+    }
 
     if (disp.currentMediaEl) {
         setTimeout(() => {
