@@ -323,17 +323,21 @@ function playSection(section){
     else if (section.type === 'dual-camera') {
         const MIRRLY_CAM_IP = (disp.state && disp.state.robot_ip) ? disp.state.robot_ip : "192.168.0.110";
 
-        const container = document.createElement('div');
-        container.id = 'dual-camera-stage';
-        Object.assign(container.style, {
-            display: 'flex',
-            width: '100vw',
-            height: '100vh',
-            position: 'fixed',
-            inset: '0',
-            backgroundColor: '#000',
-            zIndex: '50'
-        });
+        let container = qs('#dual-camera-stage');
+
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'dual-camera-stage';
+            Object.assign(container.style, {
+                display: 'flex',
+                width: '100vw',
+                height: '100vh',
+                position: 'fixed',
+                inset: '0',
+                backgroundColor: '#000',
+                zIndex: '50'
+            });
+        }
 
         container.innerHTML = `
             <div style="flex: 1; height: 100%; position: relative; overflow: hidden; border-right: 2px solid #333;">
@@ -368,10 +372,6 @@ function playSection(section){
         `;
 
         st.appendChild(container);
-
-        // qs('#disp-blur-none').addEventListener('click', () => postState({ blur_side: 'none' }));
-        // qs('#disp-blur-left').addEventListener('click', () => postState({ blur_side: 'left' }));
-        // qs('#disp-blur-right').addEventListener('click', () => postState({ blur_side: 'right' }));
 
         // # TODO: Test this change 
         qs('#disp-blur-none').addEventListener('click', () => {
@@ -651,6 +651,7 @@ function setupDisplayMediaControls() {
     const playPauseBtn = qs('#disp-btn-play-pause');
     const muteBtn = qs('#disp-btn-mute');
     const volumeSlider = qs('#disp-volume-slider');
+    const restartBtn = qs('#disp-btn-restart');
 
     playPauseBtn?.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -687,6 +688,17 @@ function setupDisplayMediaControls() {
             }
         }
     });
+
+    restartBtn?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!disp.playlist || !disp.state) return;
+
+        await postState({ index: disp.state.index, command: 'play' });
+
+        disp.renderedIndex = null;
+        disp.wasPaused = false;
+        playSection(disp.playlist.sections[disp.state.index]);
+    });
 }
 
 function renderSidebarSections() {
@@ -699,13 +711,23 @@ function renderSidebarSections() {
         const li = document.createElement('li');
         
         li.textContent = `${i + 1}. ${s.title || s.id}`;
+
+        const isSameIndex = (i === disp.state.index); // for restart current section
         
-        if (i === disp.state.index) {
+        if (isSameIndex) {
             li.className = 'active';
         }
         
         li.addEventListener('click', async () => {
             await postState({ index: i, command: 'play' });
+
+            if (isSameIndex) {
+                // force immediate reload even if index didn't change
+                disp.renderedIndex = null;
+                disp.wasPaused = false;
+                playSection(disp.playlist.sections[i]);
+            }
+
             sidebarOpen = false;
             qs('#control-sidebar')?.classList.remove('open');
             const toggleBtn = qs('#menu-toggle');
