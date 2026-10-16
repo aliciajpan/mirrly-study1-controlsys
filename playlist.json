@@ -3,7 +3,7 @@
   "sections": [
     { "id": "s1_intro_tts", "type": "image+audio", "title": "Intro TTS 1", "gesture": "overall_intro_tts", "src": "media/image/my_name_is_mirrly.jpg", "audio": "media/audio/MirrlyOverallIntro.mp3" },
     { "id": "s3_amblyopia_video", "type": "video", "title": "Amblyopia Video", "gesture": "video_tts_all", "src": "media/video/amblyopia.mp4", "auto_advance": false },
-    { "id": "s4_game_intro", "type": "image+audio", "title": "Game Intro IRL", "gesture": "intro_game", "src": "media/image/mirrly_game_time.jpg", "audio": "media/audio/tabletGameMechanism.mp3", "auto_advance": false },
+    { "id": "s4_game_intro", "type": "image+audio", "title": "Game Intro IRL", "gesture": "intro_game", "src": "media/image/mirrly_game_time.jpg", "audio": "media/audio/GAME_INTRO_TABLET.mov", "auto_advance": false },
 
     { "id": "s5_round1_prompt", "type": "image+audio", "title": "Round1 Prompt", "gesture": "game_tts_1_prompt", "src": "media/image/Rd1New.jpg", "audio": "media/audio/round 1 prompt.mov" },
     { "id": "s6_round1_countdown", "type": "image+audio", "title": "Round1 Countdown", "gesture": "countdown_gesture", "src": "media/image/Rd1New.jpg", "audio": "media/audio/countdownTimer.mp3" },
@@ -30,7 +30,7 @@
     { "id": "s23_round5_reaction", "type": "audio-select", "title": "Round5 Reaction", "backgroundSrc": "media/image/Rd5New.jpg"},
     { "id": "s24_round5_answer", "type": "image+audio", "title": "Round5 Answer", "gesture": "game_tts_5_answer", "src": "media/image/Rd5New.jpg", "audio": "media/audio/round 5 answer.mov", "auto_advance": false },
 
-    { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME OUTRO.mov", "auto_advance": false },
+    { "id": "s25_game_outro", "type": "audio", "title": "Game Outro IRL", "gesture": "outro_game", "src": "media/audio/GAME_OUTRO.mov", "auto_advance": false },
 
     {"id": "amblyopia_sim_1", 
     "type": "dual-camera", 
