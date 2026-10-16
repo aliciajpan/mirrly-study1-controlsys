@@ -126,7 +126,7 @@ Configure robot gesture synchronization via WebSocket connection:
 
 2. **Edit `.env` with your robot server details:**
    ```
-   ROBOT_WS_URL=ws://robot-machine-ip:8000
+   ROBOT_WS_URL=ws://robot-machine-ip:8765
    ROBOT_WS_ENABLED=true
    ROBOT_WS_DEBUG=false
    ROBOT_GRACEFUL_SKIP=true
