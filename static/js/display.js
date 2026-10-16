@@ -419,8 +419,9 @@ function playSection(section) {
             attachEndedAdvance(a, section);
         }
 
-        // apply whatever blur mode is stored in global state
-        applyCameraBlur(disp.state ? disp.state.blur_side : 'none');
+        // apply pre-selected blur side automatically
+        const activeBlur = (disp.state && disp.state.blur_side) ? disp.state.blur_side : targetBlurSide;
+        applyCameraBlur(activeBlur); // whatever in global blur state
     }
     
     else {
@@ -546,6 +547,8 @@ async function poll() {
     updateRobotStatusDisplay();
 }
 
+let targetBlurSide = 'left'; // global fallback
+
 function setupSessionModal() {
     const modal = qs('#session-modal-overlay');
     const input = qs('#modalPidInput');
@@ -572,6 +575,8 @@ function setupSessionModal() {
 
     async function commitAndStart() {
         const pid = input.value.trim();
+        const selectedRadio = document.querySelector('input[name="modalBlurSide"]:checked');
+        targetBlurSide = selectedRadio ? selectedRadio.value : 'left';
 
         // stop execution if empty + show error
         if (!pid) {
@@ -596,7 +601,12 @@ function setupSessionModal() {
         userInteracted = true;
         modal.remove();
 
-        await postState({ command: 'play' });
+        // seed state with play command + initial blur assignment
+        await postState({ 
+            command: 'play',
+            blur_side: targetBlurSide
+        });
+
         attemptPlay(disp.currentMediaEl);
     }
 

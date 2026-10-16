@@ -303,11 +303,24 @@
     <!-- Participant setup modal -->
     <div id="session-modal-overlay">
       <div class="session-modal">
-        <h2>Enter Participant ID</h2>
+        <h2>Study Session Setup</h2>
+        
+        <label style="font-size: 0.85rem; color: #a6adc8;">Participant ID</label>
         <input type="text" id="modalPidInput" placeholder="e.g. P-1001" autocomplete="off" autofocus />
         <span id="modalPidError" style="color: #ef4444; font-size: 0.8rem; display: none;">Participant ID is required.</span>
-        <div class="session-modal-btns">
-          <button type="button" id="btnModalRandom">Random</button>
+
+        <label style="font-size: 0.85rem; color: #a6adc8; margin-top: 6px;">Simulation Target Eye</label>
+        <div style="display: flex; gap: 10px; margin-top: -4px;">
+          <label style="flex: 1; display: flex; align-items: center; gap: 6px; background: #11111b; padding: 10px; border-radius: 6px; border: 1px solid #45475a; cursor: pointer; color: #cdd6f4;">
+            <input type="radio" name="modalBlurSide" value="left" checked /> Left Eye
+          </label>
+          <label style="flex: 1; display: flex; align-items: center; gap: 6px; background: #11111b; padding: 10px; border-radius: 6px; border: 1px solid #45475a; cursor: pointer; color: #cdd6f4;">
+            <input type="radio" name="modalBlurSide" value="right" /> Right Eye
+          </label>
+        </div>
+
+        <div class="session-modal-btns" style="margin-top: 10px;">
+          <button type="button" id="btnModalRandom">Random ID</button>
           <button type="button" id="btnModalStart">Start Study</button>
         </div>
       </div>
