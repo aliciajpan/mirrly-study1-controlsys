@@ -516,12 +516,11 @@ async function poll() {
         disp.renderedIndex=disp.state.index;
         disp.wasPaused=false;
         playSection(disp.playlist.sections[disp.state.index]);
+        updateSidebarCurrentHighlight();
     } 
 
     else { // same index, DO NOT LOOP playSection() here!!
         const section=disp.playlist.sections[disp.state.index];
-        // const hasMedia = st.querySelector('audio') || st.querySelector('video'); // audio or video currently playing?
-        // const hasMedia = !!disp.currentMediaEl; // when poll checks this during countdown, allegedly this wasn't being updated properly...?
 
         if(section.type==='audio-select' && disp.state.selection && !disp.currentMediaEl && !disp.wasPaused) {
                 playSection(section);
@@ -741,6 +740,21 @@ function renderSidebarSections() {
         if (activeItem && disp.renderedIndex !== disp.state.index) {
             activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
+}
+
+function updateSidebarCurrentHighlight() {
+    if (!disp.state) return;
+    const items = document.querySelectorAll('#sectionList li');
+    items.forEach((li, idx) => {
+        if (idx === disp.state.index) {
+            li.classList.add('active');
+            li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } 
+        
+        else {
+            li.classList.remove('active');
+        }
+    });
 }
 
 function updateRobotStatusDisplay() {
