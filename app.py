@@ -129,8 +129,13 @@ def _apply_robot_gesture(new_index: int, playlist: Dict[str, Any]):
 
         if gesture and robot_client:
             metadata = GestureMapper.get_metadata(section)
-            robot_client.send_gesture(gesture, metadata)
-            logger.info(f"Gesture triggered: {gesture} for section {section.get('id')}")
+            # Send the selected eye if this is the simulation intro gesture
+            params = {}
+            if gesture == "sim_1_gesture":
+                params["target_side"] = STATE.get("blur_side", "left")
+
+            robot_client.send_gesture(gesture, metadata=metadata, params=params)
+            logger.info(f"Gesture triggered: {gesture} with params={params} for section {section.get('id')}")
 
     except Exception as e:
         logger.error(f"Error triggering robot gesture: {e}")
@@ -213,7 +218,12 @@ def api_state():
                 if gesture and robot_client:
                     robot_client.send_command('stop')  # Stop first
                     metadata = GestureMapper.get_metadata(current_section)
-                    robot_client.send_gesture(gesture, metadata)  # Then restart
+
+                    params = {}
+                    if gesture == "sim_1_gesture":
+                        params["target_side"] = STATE.get("blur_side", "left")
+
+                    robot_client.send_gesture(gesture, metadata=metadata, params=params)  # Then restart
                     logger.info(f"Restarted gesture: {gesture} for section {current_section.get('id')}")
 
         elif cmd == 'next':
@@ -388,6 +398,11 @@ def set_session():
         STATE["PID"] = pid
         STATE["game_history"] = [] # resetting for new session
         STATE["curr_attempts"] = 0
+
+    target_eye = data.get("target_blur_side") or data.get("blur side")
+    if target_eye:
+        STATE["blur side"] = target_eye
+        
     return jsonify({"PID": STATE["PID"]})
 
 if __name__ == "__main__":

@@ -77,7 +77,7 @@ class RobotWebSocketClient:
                 # Reconnect after delay
                 await asyncio.sleep(5)
 
-    def send_gesture(self, gesture_name: str, metadata: Optional[Dict] = None) -> bool:
+    def send_gesture(self, gesture_name: str, metadata: Optional[Dict] = None, params: Optional[Dict] = None) -> bool:
         """
         Send a gesture command to the robot.
         
@@ -99,8 +99,12 @@ class RobotWebSocketClient:
             "action": "gesture",
             "gesture": gesture_name
         }
+        
         if metadata:
             payload["metadata"] = metadata
+        if params:
+            payload["params"] = params
+
         message = json.dumps(payload)
 
         # Schedule the send in the event loop
