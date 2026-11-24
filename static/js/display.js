@@ -389,42 +389,79 @@ function playSection(section) {
                 <span style="position: absolute; top: 20px; right: 24px; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: 600; pointer-events: none;">Right Eye (Mirrly's POV)</span>
             </div>
 
-            <!-- Floating On-Screen Blur Controls -->
-            <div id="display-blur-pill" style="
+            <!-- Collapsible Blur Controls Menu -->
+            <div id="blur-menu-wrapper" style="
                 position: absolute;
-                bottom: 30px;
+                bottom: 24px;
                 left: 50%;
                 transform: translateX(-50%);
                 display: flex;
-                gap: 12px;
-                background: rgba(15, 15, 23, 0.85);
-                backdrop-filter: blur(8px);
-                padding: 10px 18px;
-                border-radius: 30px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
                 z-index: 100;
             ">
-                <button id="disp-blur-none" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #3b4252; color: #fff; font-weight: 600;">Clear Blur</button>
-                <button id="disp-blur-left" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Left Eye</button>
-                <button id="disp-blur-right" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Right Eye</button>
+                <div id="display-blur-pill" style="
+                    display: none;
+                    gap: 12px;
+                    background: rgba(15, 15, 23, 0.9);
+                    backdrop-filter: blur(8px);
+                    padding: 10px 18px;
+                    border-radius: 30px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+                ">
+                    <button id="disp-blur-none" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #3b4252; color: #fff; font-weight: 600;">Clear Blur</button>
+                    <button id="disp-blur-left" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Left Eye</button>
+                    <button id="disp-blur-right" style="padding: 10px 20px; font-size: 1rem; border-radius: 20px; border: none; cursor: pointer; background: #5e81ac; color: #fff; font-weight: 600;">Blur Right Eye</button>
+                </div>
+
+                <button id="blur-menu-toggle" style="
+                    padding: 8px 18px;
+                    font-size: 0.9rem;
+                    border-radius: 20px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background: rgba(15, 15, 23, 0.7);
+                    backdrop-filter: blur(6px);
+                    color: #cdd6f4;
+                    cursor: pointer;
+                    font-weight: 600;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+                ">▲ Blur Controls</button>
             </div>
         `;
 
         st.appendChild(container);
 
-        // # TODO: Test this change 
+        const blurPill = qs('#display-blur-pill');
+        const blurToggleBtn = qs('#blur-menu-toggle');
+
+        function closeBlurMenu() {
+            blurPill.style.display = 'none';
+            blurToggleBtn.textContent = '▲ Blur Controls';
+        }
+
+        blurToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = blurPill.style.display === 'none';
+            blurPill.style.display = isHidden ? 'flex' : 'none';
+            blurToggleBtn.textContent = isHidden ? '▼ Hide Controls' : '▲ Blur Controls';
+        });
+
         qs('#disp-blur-none').addEventListener('click', () => {
             applyCameraBlur('none');
             postState({ blur_side: 'none' });
+            closeBlurMenu();
         });
         qs('#disp-blur-left').addEventListener('click', () => {
             applyCameraBlur('left');
             postState({ blur_side: 'left' });
+            closeBlurMenu();
         });
         qs('#disp-blur-right').addEventListener('click', () => {
             applyCameraBlur('right');
             postState({ blur_side: 'right' });
+            closeBlurMenu();
         });
 
         // clean up previous amb sim section audio without redoing camera feeds
