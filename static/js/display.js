@@ -13,7 +13,7 @@ const IMAGE_EXT=['png','jpg','jpeg'];
 let userInteracted = false;
 let sidebarOpen = false;
 let countdownInterval = null;
-let countdownDuration = 10;
+let countdownDuration = 180;
 let attemptStartTime = null; // get rxn time tracker directly from countdown bar to sync in logs
 let isMuted = false;
 let currentVolume = 1.0;
@@ -130,8 +130,8 @@ async function handleAnswerSubmission(chosenSide) {
 
     // --- Floating Debug Timer ---
     // hide when answer tapped
-    const debugTimerEl = qs('#debug-reaction-timer');
-    if (debugTimerEl) debugTimerEl.style.display = 'none';
+    // const debugTimerEl = qs('#debug-reaction-timer');
+    // if (debugTimerEl) debugTimerEl.style.display = 'none';
     // ----------------------------
 
     const reactionTime = attemptStartTime ? (Date.now() - attemptStartTime) / 1000 : 0.0000;
@@ -838,27 +838,27 @@ function startCountdownBar(sec) {
     bar.style.width = '100%';
 
     // --- Floating Debug Timer ---
-    let debugTimerEl = qs('#debug-reaction-timer');
-    if (!debugTimerEl) {
-        debugTimerEl = document.createElement('div');
-        debugTimerEl.id = 'debug-reaction-timer';
-        Object.assign(debugTimerEl.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            background: 'rgba(0, 0, 0, 0.75)',
-            color: '#4ade80',
-            fontFamily: 'monospace',
-            fontSize: '1.5rem',
-            padding: '8px 14px',
-            borderRadius: '8px',
-            zIndex: '10000000',
-            pointerEvents: 'none'
-        });
-        document.body.appendChild(debugTimerEl);
-    }
-    debugTimerEl.style.display = 'block';
-    debugTimerEl.textContent = '0.0000 s';
+    // let debugTimerEl = qs('#debug-reaction-timer');
+    // if (!debugTimerEl) {
+    //     debugTimerEl = document.createElement('div');
+    //     debugTimerEl.id = 'debug-reaction-timer';
+    //     Object.assign(debugTimerEl.style, {
+    //         position: 'fixed',
+    //         top: '20px',
+    //         right: '20px',
+    //         background: 'rgba(0, 0, 0, 0.75)',
+    //         color: '#4ade80',
+    //         fontFamily: 'monospace',
+    //         fontSize: '1.5rem',
+    //         padding: '8px 14px',
+    //         borderRadius: '8px',
+    //         zIndex: '10000000',
+    //         pointerEvents: 'none'
+    //     });
+    //     document.body.appendChild(debugTimerEl);
+    // }
+    // debugTimerEl.style.display = 'block';
+    // debugTimerEl.textContent = '0.0000 s';
     // ----------------------------
     
     const totalMs = sec * 1000;
@@ -869,12 +869,12 @@ function startCountdownBar(sec) {
         elapsedMs += updateRateMs;
 
         // --- Floating Debug Timer ---
-        const currentSeconds = (Date.now() - attemptStartTime) / 1000;
+        // const currentSeconds = (Date.now() - attemptStartTime) / 1000;
         
-        // update live reaction time display
-        if (debugTimerEl) {
-            debugTimerEl.textContent = `${currentSeconds.toPrecision(4)} s`;
-        }
+        // // update live reaction time display
+        // if (debugTimerEl) {
+        //     debugTimerEl.textContent = `${currentSeconds.toPrecision(4)} s`;
+        // }
         // ----------------------------
 
         const percentageLeft = Math.max(0, 100 - (elapsedMs / totalMs) * 100);

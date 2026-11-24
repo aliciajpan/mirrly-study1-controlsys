@@ -43,17 +43,42 @@
         top: 0;
         left: 0;
         width: 100vw;
-        height: 10px;
+        height: 24px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 3px solid #ffffff;
+        box-sizing: border-box;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
         background: rgba(255, 255, 255, 0.2);
         z-index: 99999;
         display: none;
+        overflow: hidden;
+        border-radius: 50px;
       }
 
       #timer-bar {
         width: 100%;
         height: 100%;
-        background: #ef4444;
+        background-color: #16a34a;
+        background-image: repeating-linear-gradient(
+            -45deg,
+            #16a34a,
+            #16a34a 20px,
+            #4ade80 20px,
+            #4ade80 40px
+        );
+        background-size: 56.57px 56.57px;
+        animation: barber-pole 5s linear infinite;
         transition: width 0.1s linear;
+        border-radius: inherit;
+      }
+
+      @keyframes barber-pole {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: 56.57px 0;
+        }
       }
 
       /* Navigation menu button */
