@@ -382,11 +382,11 @@ function playSection(section) {
         container.innerHTML = `
             <div style="flex: 1; height: 100%; position: relative; overflow: hidden; border-right: 2px solid #333;">
                 <img id="cam-left-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/left" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease-in-out;" />
-                <span style="position: absolute; top: 20px; left: 24px; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: 600; pointer-events: none;">Left Eye (Mirrly's POV)</span>
+                <span style="position: absolute; top: 20px; left: 35%; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.8rem; font-weight: 600; pointer-events: none;">Mirrly's Left Eye</span>
             </div>
             <div style="flex: 1; height: 100%; position: relative; overflow: hidden;">
                 <img id="cam-right-feed" src="http://${MIRRLY_CAM_IP}:5002/video_feed/right" style="width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease-in-out;" />
-                <span style="position: absolute; top: 20px; right: 24px; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: 600; pointer-events: none;">Right Eye (Mirrly's POV)</span>
+                <span style="position: absolute; top: 20px; right: 30%; background: rgba(0,0,0,0.65); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 1.8rem; font-weight: 600; pointer-events: none;">Mirrly's Right Eye</span>
             </div>
 
             <!-- Collapsible Blur Controls Menu -->
