@@ -137,7 +137,6 @@ function pause() {
 function play() {
   state.paused = false;
   const el = state.currentMediaEl;
-  if (el && typeof el.play === 'function') el.play();
 }
 
 function next() { goTo(state.index + 1); }
