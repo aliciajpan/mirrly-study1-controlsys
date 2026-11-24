@@ -36,7 +36,9 @@
     "type": "dual-camera", 
     "title": "Amblyopia Simulation Intro", 
     "gesture": "sim_1_gesture",
-    "audio": "media/audio/eyeSim/eyeSim1-patch_this_eye_NAME.mp4", 
+    "audio": "media/audio/eyeSim/eyeSim1-default.mp4",
+    "audio_left": "media/audio/eyeSim/eyeSim1-LS.mp3", 
+    "audio_right": "media/audio/eyeSim/eyeSim1-RS.mp3", 
     "auto_advance": true},
 
     {"id": "amblyopia_sim_2", 

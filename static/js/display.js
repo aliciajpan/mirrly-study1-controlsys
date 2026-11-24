@@ -218,6 +218,28 @@ function mountNextButton(section) {
     document.body.appendChild(nextBtn);
 }
 
+function getSectionAudio(section) {
+    const activeSide = (disp.state && disp.state.blur_side && disp.state.blur_side !== 'none') ? disp.state.blur_side : targetBlurSide;
+    const side = String(activeSide || '').toLowerCase();
+
+    console.log("[AUDIO DEBUG]", {
+        sectionId: section.id,
+        stateBlur: disp.state?.blur_side,
+        targetBlurSide,
+        resolvedSide: side,
+        audio_left: section.audio_left,
+        audio_right: section.audio_right
+    });
+
+    if ((side === 'left' || side === 'ls') && section.audio_left) {
+        return section.audio_left;
+    }
+    if ((side === 'right' || side === 'rs') && section.audio_right) {
+        return section.audio_right;
+    }
+    return section.audio || section.src;
+}
+
 function playSection(section) {
 
     clearInterval(countdownInterval);
@@ -245,7 +267,8 @@ function playSection(section) {
 	} 
     
     else if(section.type==='audio') {
-		const a=createElementForSource(section.src,'audio');
+        const chosenAudio = getSectionAudio(section);
+		const a=createElementForSource(chosenAudio,'audio');
 		st.appendChild(a);
 		disp.currentMediaEl=a;
 		attachEndedAdvance(a,section);
@@ -259,7 +282,8 @@ function playSection(section) {
     else if(section.type==='image+audio') {
 		const img=createElementForSource(section.src,'image');
 		st.appendChild(img);
-		const a=createElementForSource(section.audio,'audio');
+        const chosenAudio = getSectionAudio(section);
+		const a=createElementForSource(chosenAudio,'audio');
 		a.style.display = 'none'; // hide audio element
 		st.appendChild(a);
 		disp.currentMediaEl=a;
@@ -410,8 +434,9 @@ function playSection(section) {
         } 
 
         // attach the new section audio track
-        if (section.audio) {
-            const a = createElementForSource(section.audio, 'audio');
+        const chosenAudio = getSectionAudio(section);
+        if (chosenAudio) {
+            const a = createElementForSource(chosenAudio, 'audio');
             a.id = 'dual-cam-audio';
             a.style.display = 'none';
             st.appendChild(a);
@@ -463,8 +488,14 @@ function playSection(section) {
     }
 	
 	// trigger robot gesture for this section
-	if(disp.state.robot_status!=='disconnected'){postState({command:'gesture'});}
-}
+    if (disp.state.robot_status !== 'disconnected') {
+        const activeSide = (disp.state && disp.state.blur_side) ? disp.state.blur_side : targetBlurSide;
+        postState({
+            blur_side: activeSide,
+            target_side: activeSide
+        });
+    }
+}  
 
 function applyPauseState(){
 	const playPauseBtn = qs('#disp-btn-play-pause');
@@ -539,7 +570,7 @@ async function poll() {
         }
 
         if (disp.playlist && disp.playlist.sections[disp.state.index].type === 'dual-camera') {
-            applyCameraBlur(disp.state.blur_side);
+            applyCameraBlur(disp.state.blur_side || targetBlurSide);
         }
     } 
     
@@ -591,7 +622,10 @@ function setupSessionModal() {
             await fetch('/api/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ PID: pid })
+                body: JSON.stringify({ 
+                    PID: pid,
+                    blur_side: targetBlurSide
+                })
             });
         } catch (e) {
             console.error("Failed to set session ID:", e);

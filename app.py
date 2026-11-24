@@ -242,6 +242,9 @@ def api_state():
                 STATE['selection'] = None
                 _apply_robot_gesture(new_i, playlist)
 
+        elif cmd == 'gesture':
+            _apply_robot_gesture(STATE['index'], playlist)
+
         # Selection for audio-select
         if 'selection' in data:
             sel = data['selection']
@@ -399,11 +402,11 @@ def set_session():
         STATE["game_history"] = [] # resetting for new session
         STATE["curr_attempts"] = 0
 
-    target_eye = data.get("target_blur_side") or data.get("blur side")
+    target_eye = data.get("target_blur_side") or data.get("blur_side")
     if target_eye:
-        STATE["blur side"] = target_eye
+        STATE["blur_side"] = target_eye
         
-    return jsonify({"PID": STATE["PID"]})
+    return jsonify({"PID": STATE["PID"], "blur_side": STATE["blur_side"]})
 
 if __name__ == "__main__":
     init_robot_client()
